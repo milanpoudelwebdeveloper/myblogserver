@@ -3,9 +3,9 @@ import { uploadMulter } from '@utils/imageUpload'
 import express from 'express'
 
 const router = express.Router()
-router.post('/category', uploadMulter.single(''), addCategory)
-router.get('/category', getCategories)
-router.put('/category/:id', updateCategory)
-router.delete('/category/:id', deleteCategory)
+router.post('/', uploadMulter.single('image'), addCategory)
+router.get('/', getCategories)
+router.put('/:id', updateCategory)
+router.delete('/:id', deleteCategory)
 
 export default router
