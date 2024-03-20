@@ -33,6 +33,27 @@ export const getCategories = async (_: Request, res: Response) => {
   }
 }
 
+export const getCategoryDetails = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const category = await db.query('SELECT * FROM category WHERE id=$1', [id])
+    if (category.rows.length > 0) {
+      const getObjectParams = {
+        Bucket: bucketName,
+        Key: category.rows[0].image
+      }
+      const command = new GetObjectCommand(getObjectParams)
+      const url = await getSignedUrl(s3, command)
+      category.rows[0].image = url
+      return res.status(200).json({ message: 'Category fetched successfully', data: category.rows[0] })
+    } else {
+      return res.status(404).json({ message: 'Category not found' })
+    }
+  } catch (error) {
+    return res.status(500).json({ message: 'Something went wrong. Please try again' })
+  }
+}
+
 export const addCategory = async (req: Request, res: Response) => {
   const { name } = req.body
   if (!name || !req.file) {
@@ -89,3 +110,11 @@ export const deleteCategory = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Something went wrong. Please try again' })
   }
 }
+
+// export const deleteCategoryImage = async (req: Request, res: Response) => {
+//   try {
+
+//   } catch (e) {
+//     return res.status(500).json({ message: 'Something went wrong. Please try again' })
+//   }
+// }

@@ -3,6 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import morgan from 'morgan'
 import categoryRoutes from '@routes/category'
+import blogRoutes from '@routes/blog'
 
 dotenv.config()
 
@@ -26,6 +27,7 @@ app.use(
 app.set('trust proxy', 1)
 
 app.use('/api/category', categoryRoutes)
+app.use('/api/blog', blogRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
