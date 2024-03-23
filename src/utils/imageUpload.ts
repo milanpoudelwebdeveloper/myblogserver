@@ -10,9 +10,6 @@ const bucketRegion = process.env.BUCKET_REGION!
 const awsAccessKey = process.env.AWS_ACCESS_KEY!
 const AWS_SECRET = process.env.AWS_SECRET!
 
-console.log('the bucket region is', bucketRegion)
-console.log('the aws access key is', awsAccessKey)
-
 export const s3 = new S3Client({
   credentials: {
     accessKeyId: awsAccessKey,

@@ -9,8 +9,6 @@ const bucketName = process.env.BUCKET_NAME!
 export const addBlog = async (req: Request, res: Response) => {
   try {
     const { title, content, category } = req.body
-
-    console.log('req.file heyf', req.file)
     const coverImage = req.file
     if (!title || !content || !coverImage || !category) {
       return res.status(400).json({ message: 'Please fill all the fields' })
@@ -30,21 +28,18 @@ export const addBlog = async (req: Request, res: Response) => {
       return res.status(500).json({ message: 'Something went wrong while creating a blog.Please try again' })
     }
   } catch (e) {
-    console.log('hey error is', e)
-    return res.status(500).json({ message: 'Someting went wrong while creating post.Please try again' })
+    console.log('hey error while adding blog', e)
+    return res.status(500).json({ message: 'Something went wrong while creating post.Please try again' })
   }
 }
 
 export const getBlogs = async (req: Request, res: Response) => {
   const { categoryId } = req.query
-  console.log('The cartegory id is', categoryId)
-
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let blogs: any = []
     if (categoryId === 'all') {
-      console.log('hey no')
       blogs = await db.query(
-        //if category id is null fetch all blogs
         'SELECT blog.*, category.name AS categoryname FROM blog JOIN category ON blog.category=category.id ORDER BY blog.id DESC',
         []
       )
@@ -56,7 +51,6 @@ export const getBlogs = async (req: Request, res: Response) => {
         [categoryId as string]
       )
     }
-    console.log('blogs are', blogs.rows)
     if (blogs.rows.length > 0) {
       for (const blog of blogs.rows) {
         const getObjectParams = {
@@ -74,9 +68,9 @@ export const getBlogs = async (req: Request, res: Response) => {
     } else {
       return res.status(404).json({ message: 'No blogs found' })
     }
-  } catch (error) {
-    console.log(error)
-    return res.status(500).json({ message: 'Something went wrong. Please try again' })
+  } catch (e) {
+    console.log('hey error while getting blogs', e)
+    return res.status(500).json({ message: 'Something went wrong while getting blogs. Please try again' })
   }
 }
 
@@ -100,8 +94,8 @@ export const getBlogDetails = async (req: Request, res: Response) => {
     } else {
       return res.status(404).json({ message: 'No blog details found' })
     }
-  } catch (error) {
-    console.log(error)
-    return res.status(500).json({ message: 'Something went wrong. Please try again' })
+  } catch (e) {
+    console.log('hey error while getting blog details', e)
+    return res.status(500).json({ message: 'Something went wrong while getting blog details. Please try again' })
   }
 }

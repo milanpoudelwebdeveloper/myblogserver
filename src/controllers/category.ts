@@ -26,9 +26,9 @@ export const getCategories = async (_: Request, res: Response) => {
     } else {
       return res.status(404).json({ message: 'No categories found' })
     }
-  } catch (error) {
-    console.log(error)
-    return res.status(500).json({ message: 'Something went wrong. Please try again' })
+  } catch (e) {
+    console.log('hey error while getting categories', e)
+    return res.status(500).json({ message: 'Something went wrong while getting categories.Please try again' })
   }
 }
 
@@ -48,8 +48,9 @@ export const getCategoryDetails = async (req: Request, res: Response) => {
     } else {
       return res.status(404).json({ message: 'Category not found' })
     }
-  } catch (error) {
-    return res.status(500).json({ message: 'Something went wrong. Please try again' })
+  } catch (e) {
+    console.log('hey error while getting category details', e)
+    return res.status(500).json({ message: 'Something went wrong while getting category details.Please try again' })
   }
 }
 
@@ -77,7 +78,8 @@ export const addCategory = async (req: Request, res: Response) => {
       return res.status(500).json({ message: 'Something went wrong while creating a new category.Please try again' })
     }
   } catch (error) {
-    return res.status(500).json({ message: 'Something went wrong with the server' })
+    console.log('hey error while adding category', error)
+    return res.status(500).json({ message: 'Something went wrong while adding category. Please try again' })
   }
 }
 
@@ -96,7 +98,8 @@ export const updateCategory = async (req: Request, res: Response) => {
       }
     }
   } catch (e) {
-    return res.status(500).json({ message: 'Something went wrong. Please try again' })
+    console.log('hey error while updating category', e)
+    return res.status(500).json({ message: 'Something went wrong while updating category.Please try again' })
   }
 }
 
@@ -106,14 +109,7 @@ export const deleteCategory = async (req: Request, res: Response) => {
     await db.query('DELETE FROM category WHERE id=$1 RETURNING *', [id])
     return res.status(200).json({ message: 'Category deleted successfully' })
   } catch (e) {
-    return res.status(500).json({ message: 'Something went wrong. Please try again' })
+    console.log('hey error while deleting category', e)
+    return res.status(500).json({ message: 'Something went wrong while deleting category. Please try again' })
   }
 }
-
-// export const deleteCategoryImage = async (req: Request, res: Response) => {
-//   try {
-
-//   } catch (e) {
-//     return res.status(500).json({ message: 'Something went wrong. Please try again' })
-//   }
-// }
