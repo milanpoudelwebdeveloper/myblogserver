@@ -35,9 +35,27 @@ export const addBlog = async (req: Request, res: Response) => {
   }
 }
 
-export const getBlogs = async (_: Request, res: Response) => {
+export const getBlogs = async (req: Request, res: Response) => {
+  const { categoryId } = req.query
+  console.log('The cartegory id is', categoryId)
+
   try {
-    const blogs = await db.query('SELECT * FROM blog', [])
+    let blogs: any = []
+    if (categoryId === 'all') {
+      console.log('hey no')
+      blogs = await db.query(
+        //if category id is null fetch all blogs
+        'SELECT blog.*, category.name AS categoryname FROM blog JOIN category ON blog.category=category.id ORDER BY blog.id DESC',
+        []
+      )
+    } else {
+      console.log('hey implem')
+      blogs = await db.query(
+        //if category id is null fetch all blogs
+        'SELECT blog.*, category.name AS categoryname FROM blog JOIN category ON blog.category=category.id WHERE category=$1 ORDER BY blog.id DESC',
+        [categoryId as string]
+      )
+    }
     console.log('blogs are', blogs.rows)
     if (blogs.rows.length > 0) {
       for (const blog of blogs.rows) {
@@ -55,6 +73,32 @@ export const getBlogs = async (_: Request, res: Response) => {
       })
     } else {
       return res.status(404).json({ message: 'No blogs found' })
+    }
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ message: 'Something went wrong. Please try again' })
+  }
+}
+
+export const getBlogDetails = async (req: Request, res: Response) => {
+  const { id } = req.params
+  try {
+    const blogDetails = await db.query('SELECT * FROM blog WHERE id=$1', [id])
+    if (blogDetails?.rows?.length) {
+      const foundBlog = blogDetails?.rows[0]
+      const getObjectParams = {
+        Bucket: bucketName,
+        Key: foundBlog.coverimage
+      }
+      const command = new GetObjectCommand(getObjectParams)
+      const url = await getSignedUrl(s3, command)
+      foundBlog.coverimage = url
+      return res.status(201).json({
+        message: 'Blog Details fetched successfully',
+        data: foundBlog
+      })
+    } else {
+      return res.status(404).json({ message: 'No blog details found' })
     }
   } catch (error) {
     console.log(error)

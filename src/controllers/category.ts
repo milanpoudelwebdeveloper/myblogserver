@@ -9,7 +9,6 @@ const bucketName = process.env.BUCKET_NAME!
 export const getCategories = async (_: Request, res: Response) => {
   try {
     const categories = await db.query('SELECT * FROM category', [])
-
     if (categories.rows.length > 0) {
       for (const category of categories.rows) {
         const getObjectParams = {
