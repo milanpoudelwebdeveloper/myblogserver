@@ -6,7 +6,7 @@ const router = express.Router()
 router.post('/', uploadMulter.single('image'), addCategory)
 router.get('/', getCategories)
 router.get('/:id', getCategoryDetails)
-router.put('/:id', updateCategory)
+router.put('/:id', uploadMulter.single('image'), updateCategory)
 router.delete('/:id', deleteCategory)
 
 export default router

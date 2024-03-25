@@ -86,11 +86,28 @@ export const addCategory = async (req: Request, res: Response) => {
 export const updateCategory = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const { name, image } = req.body
-    if (!name || !image) {
+    const { name } = req.body
+    let finalFile
+    const image = req.file
+
+    if (image) {
+      const uploadParams = {
+        Bucket: bucketName,
+        Key: image?.originalname + '-' + Date.now(),
+        Body: image?.buffer,
+        ContentType: image?.mimetype
+      }
+      await s3.send(new PutObjectCommand(uploadParams))
+      finalFile = uploadParams.Key
+    }
+    if (!name) {
       return res.status(400).json({ message: 'Name and image are required' })
     } else {
-      const category = await db.query('UPDATE category SET name=$1, image=$2 WHERE id=$3 RETURNING *', [name, image, id])
+      const category = await db.query('UPDATE category SET name=$1, image = COALESCE($2, image) WHERE id=$3 RETURNING *', [
+        name,
+        finalFile,
+        id
+      ])
       if (category.rows.length > 0) {
         return res.status(200).json({ message: 'Category updated successfully', category: category.rows[0] })
       } else {
