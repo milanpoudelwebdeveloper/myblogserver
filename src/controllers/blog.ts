@@ -1,4 +1,4 @@
-import { GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import db from '@root/db'
 import { s3 } from '@utils/imageUpload'
@@ -118,5 +118,28 @@ export const updateBlog = async (req: Request, res: Response) => {
   } catch (e) {
     console.log('hey error while saving as draft', e)
     return res.status(500).json({ message: 'Something went wrong while saving as draft. Please try again' })
+  }
+}
+
+export const deleteBlog = async (req: Request, res: Response) => {
+  const { id } = req.params
+  try {
+    const findBlog = await db.query('SELECT DISTINCT * FROM blog WHERE id=$1', [id])
+    if (findBlog.rows.length > 0) {
+      const foundBlog = findBlog.rows[0]
+      const query = 'DELETE FROM blog WHERE id=$1'
+      await db.query(query, [id])
+      const deleteParams = {
+        Bucket: bucketName,
+        Key: foundBlog.coverimage
+      }
+      await s3.send(new DeleteObjectCommand(deleteParams))
+      return res.status(201).json({ message: 'Blog deleted successfully' })
+    } else {
+      return res.status(404).json({ message: 'No blog found' })
+    }
+  } catch (e) {
+    console.log('hey error while deleting blog', e)
+    return res.status(500).json({ message: 'Something went wrong while deleting blog. Please try again' })
   }
 }

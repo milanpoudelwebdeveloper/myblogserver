@@ -14,7 +14,6 @@ CREATE TABLE blog (
     category INT NOT NULL,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (category) REFERENCES category(id) ON DELETE CASCADE
-
   );
 
   //add new column published to blog table
