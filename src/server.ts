@@ -4,6 +4,8 @@ import dotenv from 'dotenv'
 import morgan from 'morgan'
 import categoryRoutes from '@routes/category'
 import blogRoutes from '@routes/blog'
+import authRoutes from '@routes/auth'
+import userRoutes from '@routes/user'
 
 dotenv.config()
 
@@ -28,6 +30,8 @@ app.set('trust proxy', 1)
 
 app.use('/api/category', categoryRoutes)
 app.use('/api/blog', blogRoutes)
+app.use('/api/auth', authRoutes)
+app.use('/api/users', userRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
