@@ -173,3 +173,25 @@ export const checkLogin = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Something went wrong while checking login. Please try again' })
   }
 }
+
+export const sendVerificationLink = async (req: Request, res: Response) => {
+  const { email } = req.body
+  try {
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' })
+    }
+    const user = await db.query('SELECT * FROM users WHERE email=$1', [email])
+    if (user?.rows?.length) {
+      const token = generateJWTKey(user.rows[0].id)
+      const message = `Please verify your account by clicking on the link below.
+      ${clientUrl}/verifyaccount?token=${token}`
+      sendEmail(email, 'Welcome to MyBlog', message)
+      return res.status(200).json({ message: 'Verification link sent successfully' })
+    } else {
+      return res.status(400).json({ message: 'User with that email not found' })
+    }
+  } catch (e) {
+    console.log('hey error while sending verification link', e)
+    return res.status(500).json({ message: 'Something went wrong while sending verification link. Please try again' })
+  }
+}
