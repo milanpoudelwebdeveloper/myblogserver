@@ -38,6 +38,7 @@ export const signUp = async (req: Request, res: Response) => {
 
 interface JwtPayload {
   id: string
+  role?: string
 }
 
 export const verifyAccount = async (req: Request, res: Response) => {
@@ -50,7 +51,13 @@ export const verifyAccount = async (req: Request, res: Response) => {
     if (decoded) {
       const query = 'UPDATE users SET verified=true WHERE id=$1'
       await db.query(query, [decoded?.id])
-      return res.status(200).json({ message: 'Account verified successfully' })
+      if (decoded?.role) {
+        const token = generateJWTKey(decoded.id)
+        const finalUrl = `${clientUrl}/change-password?token=${token}`
+        return res.status(200).json({ message: 'Account verified successfully', redirectUrl: finalUrl })
+      } else {
+        return res.status(200).json({ message: 'Account verified successfully' })
+      }
     } else {
       return res.status(400).json({ message: 'Invalid token' })
     }
@@ -193,5 +200,30 @@ export const sendVerificationLink = async (req: Request, res: Response) => {
   } catch (e) {
     console.log('hey error while sending verification link', e)
     return res.status(500).json({ message: 'Something went wrong while sending verification link. Please try again' })
+  }
+}
+
+export const changePassword = async (req: Request, res: Response) => {
+  const { password, token } = req.body
+  try {
+    if (!token) {
+      return res.status(400).json({ message: 'Token is invalid or not available' })
+    }
+    if (!password) {
+      return res.status(400).json({ message: 'Password is required' })
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload
+    if (decoded) {
+      const salt = await bcrypt.genSalt(10)
+      const hashedPassword = bcrypt.hashSync(password, salt)
+      const query = 'UPDATE users SET password=$1 WHERE id=$2'
+      await db.query(query, [hashedPassword, decoded.id])
+      return res.status(200).json({ message: 'Password changed successfully. You can login now' })
+    } else {
+      return res.status(400).json({ message: 'Invalid or expired token. Please try resending password reset link' })
+    }
+  } catch (e) {
+    console.log('hey error while changing password', e)
+    return res.status(500).json({ message: 'Something went wrong while changing password. Please try again' })
   }
 }
