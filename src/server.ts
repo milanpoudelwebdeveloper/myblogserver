@@ -25,13 +25,12 @@ app.use(cookieParser())
 app.use(morgan('dev'))
 app.use(
   cors({
-    origin: '*',
+    origin: [process.env.CORS_ORIGIN as string, 'http://localhost:3000'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE']
   })
 )
 app.set('trust proxy', 1)
-
 app.use('/api/category', categoryRoutes)
 app.use('/api/blog', blogRoutes)
 app.use('/api/auth', authRoutes)
