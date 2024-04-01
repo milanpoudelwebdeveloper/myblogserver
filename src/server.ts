@@ -17,13 +17,12 @@ const PORT = process.env.PORT || 5000
 
 app.use(
   cors({
-    origin: [process.env.CORS_ORIGIN as string, 'http://localhost:3000'],
-    credentials: true
+    origin: '*'
   })
 )
 
 app.use((_: Request, res: Response, next: NextFunction) => {
-  res.header('Acess-Control-Allow-Credentials', 'true'), next()
+  next()
 })
 console.log('they running')
 app.use(express.json({ limit: '10mb' }))
