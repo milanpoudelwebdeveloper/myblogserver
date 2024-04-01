@@ -15,8 +15,18 @@ const app = express()
 
 const PORT = process.env.PORT || 5000
 
+app.use(
+  cors({
+    origin: [process.env.CORS_ORIGIN as string, 'http://localhost:3000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
+  })
+)
+
 app.use((_: Request, res: Response, next: NextFunction) => {
   res.header('Acess-Control-Allow-Credentials', 'true')
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
   next()
 })
 app.use(express.json({ limit: '10mb' }))
@@ -32,6 +42,7 @@ app.use(
 )
 app.set('trust proxy', 1)
 
+app.set('trust proxy', 1)
 app.use('/api/category', categoryRoutes)
 app.use('/api/blog', blogRoutes)
 app.use('/api/auth', authRoutes)
