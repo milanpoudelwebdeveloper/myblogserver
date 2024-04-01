@@ -23,7 +23,9 @@ app.use(
 )
 
 app.use((_: Request, res: Response, next: NextFunction) => {
-  next()
+  res.header('Acess-Control-Allow-Credentials', 'true'),
+    res.header('Access-Control-Allow-Origin', 'https://codewithmilan.com/' as string),
+    next()
 })
 console.log('they running')
 app.use(express.json({ limit: '10mb' }))
