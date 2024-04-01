@@ -33,6 +33,14 @@ app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(morgan('dev'))
+app.use(
+  cors({
+    origin: [process.env.CORS_ORIGIN!, 'http://localhost:3000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
+  })
+)
+app.set('trust proxy', 1)
 
 app.set('trust proxy', 1)
 app.use('/api/category', categoryRoutes)
