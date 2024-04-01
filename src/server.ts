@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express'
 import cookieParser from 'cookie-parser'
+import cors from 'cors'
 import dotenv from 'dotenv'
 import morgan from 'morgan'
 import categoryRoutes from '@routes/category'
@@ -13,6 +14,13 @@ dotenv.config()
 const app = express()
 
 const PORT = process.env.PORT || 5000
+
+app.use(
+  cors({
+    origin: [process.env.CORS_ORIGIN as string, 'http://localhost:3000'],
+    credentials: true
+  })
+)
 
 app.use((_: Request, res: Response, next: NextFunction) => {
   res.header('Acess-Control-Allow-Credentials', 'true'), next()
