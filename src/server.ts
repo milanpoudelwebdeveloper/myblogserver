@@ -15,14 +15,6 @@ const app = express()
 
 const PORT = process.env.PORT || 5000
 
-app.use((_: Request, res: Response, next: NextFunction) => {
-  res.header('Acess-Control-Allow-Credentials', 'true')
-  next()
-})
-app.use(express.json({ limit: '10mb' }))
-app.use(express.urlencoded({ extended: true }))
-app.use(cookieParser())
-app.use(morgan('dev'))
 app.use(
   cors({
     origin: [process.env.CORS_ORIGIN as string, 'http://localhost:3000'],
@@ -30,6 +22,18 @@ app.use(
     methods: ['GET', 'POST', 'PUT', 'DELETE']
   })
 )
+
+app.use((_: Request, res: Response, next: NextFunction) => {
+  res.header('Acess-Control-Allow-Credentials', 'true')
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+  next()
+})
+app.use(express.json({ limit: '10mb' }))
+app.use(express.urlencoded({ extended: true }))
+app.use(cookieParser())
+app.use(morgan('dev'))
+
 app.set('trust proxy', 1)
 app.use('/api/category', categoryRoutes)
 app.use('/api/blog', blogRoutes)
