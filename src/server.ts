@@ -27,6 +27,7 @@ app.use((_: Request, res: Response, next: NextFunction) => {
     res.header('Access-Control-Allow-Origin', process.env.CORS_ORIGIN as string),
     next()
 })
+console.log('they running')
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
