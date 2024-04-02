@@ -32,7 +32,7 @@ app.use(
     origin: allowedOrigins,
     methods: 'POST, GET, PUT, DELETE',
     optionsSuccessStatus: 204,
-    allowedHeaders: 'Content-Type, Authorization'
+    allowedHeaders: 'Content-Type'
   })
 )
 
