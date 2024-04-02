@@ -7,6 +7,7 @@ import blogRoutes from '@routes/blog'
 import authRoutes from '@routes/auth'
 import userRoutes from '@routes/user'
 import stats from '@routes/stats'
+import cors from 'cors'
 
 dotenv.config()
 
@@ -31,6 +32,8 @@ app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(morgan('dev'))
+
+app.use(cors({ credentials: true, origin: 'https://www.codewithmilan.com' }))
 
 app.set('trust proxy', 1)
 app.use('/api/category', categoryRoutes)
