@@ -20,13 +20,15 @@ const allowedOrigins = ['http://localhost:3000', 'https://www.codewithmilan.com'
 app.use(
   cors({
     credentials: true,
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true)
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        return callback(null, true)
-      }
-      return callback(new Error('Not allowed by CORS'))
-    },
+    // origin: (origin, callback) => {
+    //   if (!origin) return callback(null, true)
+    //   if (allowedOrigins.indexOf(origin) !== -1) {
+    //     return callback(null, true)
+    //   }
+
+    //   return callback(new Error('Not allowed by CORS'))
+    // },
+    origin: allowedOrigins,
     methods: 'GET, POST, PUT, DELETE',
     preflightContinue: false,
     optionsSuccessStatus: 204
