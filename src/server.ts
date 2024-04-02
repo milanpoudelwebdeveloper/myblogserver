@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { NextFunction, Request, Response } from 'express'
 import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
 import morgan from 'morgan'
@@ -23,13 +23,13 @@ app.use(
   })
 )
 
-// app.use((_: Request, res: Response, next: NextFunction) => {
-//   res.header('Access-Control-Allow-Origin', 'https://codewithmilan.com')
-//   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT ,DELETE')
-//   res.header('Access-Control-Allow-Credentials', 'true')
-//   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
-//   next()
-// })
+app.use((_: Request, res: Response, next: NextFunction) => {
+  res.header('Access-Control-Allow-Origin', 'https://codewithmilan.com')
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT ,DELETE')
+  res.header('Access-Control-Allow-Credentials', 'true')
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+  next()
+})
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
