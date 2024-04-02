@@ -21,7 +21,7 @@ app.use(function (req, res, next) {
   // if (allowedOrigins.includes(origin as string)) {
   //   res.setHeader('Access-Control-Allow-Origin', origin as string)
   // }
-  res.header('Access-Control-Allow-Origin', 'https://wwwcodewithmilan.com')
+  res.header('Access-Control-Allow-Origin', 'https://www.codewithmilan.com')
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
   res.header('Access-Control-Allow-credentials', true)
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
