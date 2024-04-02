@@ -16,11 +16,12 @@ const PORT = process.env.PORT || 5000
 
 app.use(function (req, res, next) {
   // res.header("Access-Control-Allow-Origin", "*");
-  const allowedOrigins = ['http://localhost:3000', 'https://codewithmilan.com', 'https://www.codewithmilan.com']
-  const origin = req.headers.origin
-  if (allowedOrigins.includes(origin as string)) {
-    res.setHeader('Access-Control-Allow-Origin', origin as string)
-  }
+  // const allowedOrigins = ['http://localhost:3000', 'https://codewithmilan.com', 'https://www.codewithmilan.com']
+  // const origin = req.headers.origin
+  // if (allowedOrigins.includes(origin as string)) {
+  //   res.setHeader('Access-Control-Allow-Origin', origin as string)
+  // }
+  res.header('Access-Control-Allow-Origin', 'https://wwwcodewithmilan.com')
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
   res.header('Access-Control-Allow-credentials', true)
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
