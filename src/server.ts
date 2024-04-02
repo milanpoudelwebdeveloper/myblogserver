@@ -7,13 +7,21 @@ import blogRoutes from '@routes/blog'
 import authRoutes from '@routes/auth'
 import userRoutes from '@routes/user'
 import stats from '@routes/stats'
-// import cors from 'cors'
+import cors from 'cors'
 
 dotenv.config()
 
 const app = express()
 
 const PORT = process.env.PORT || 5000
+
+app.use(
+  cors({
+    origin: 'https://codewithmilan.com',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+  })
+)
 
 app.use((_: Request, res: Response, next: NextFunction) => {
   res.header('Access-Control-Allow-Origin', 'https://codewithmilan.com')
@@ -27,13 +35,6 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(morgan('dev'))
 
-// app.use(
-//   cors({
-//     origin: ['http://localhost:3000', 'https://codewithmilan.com'],
-//     credentials: true,
-//     methods: ['GET', 'POST', 'PUT', 'DELETE']
-//   })
-// )
 app.set('trust proxy', 1)
 app.use('/api/category', categoryRoutes)
 app.use('/api/blog', blogRoutes)
