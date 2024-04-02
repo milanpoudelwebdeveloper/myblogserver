@@ -28,7 +28,8 @@ app.use(
       }
       return callback(null, true)
     },
-    optionsSuccessStatus: 200
+    optionsSuccessStatus: 200,
+    methods: 'GET, POST, PUT, DELETE'
   })
 )
 
