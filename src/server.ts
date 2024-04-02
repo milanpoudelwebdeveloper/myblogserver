@@ -1,4 +1,4 @@
-import express, { NextFunction, Request, Response } from 'express'
+import express from 'express'
 import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
 import morgan from 'morgan'
@@ -15,10 +15,6 @@ const app = express()
 
 const PORT = process.env.PORT || 5000
 
-app.use((_: Request, res: Response, next: NextFunction) => {
-  res.setHeader('Access-Control-Allow-Credentials', 'true')
-  next()
-})
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
