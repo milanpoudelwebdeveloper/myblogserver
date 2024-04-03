@@ -8,7 +8,7 @@ import authRoutes from '@routes/auth'
 import userRoutes from '@routes/user'
 import stats from '@routes/stats'
 import cors from 'cors'
-
+import bcrypt from 'bcrypt'
 dotenv.config()
 
 const app = express()
@@ -46,6 +46,15 @@ app.use('/api/blog', blogRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/stats', stats)
+
+const getPassword = async () => {
+  const salt = await bcrypt.genSalt(10)
+  const password = process.env.SUPER_ADMIN_PASSWORD!
+  const hashedPassword = bcrypt.hashSync(password, salt)
+  console.log('hashed password is', hashedPassword)
+}
+
+getPassword()
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
