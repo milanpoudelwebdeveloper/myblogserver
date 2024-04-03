@@ -9,7 +9,6 @@ const pool = (() => {
     return new Pool({})
   } else {
     return new Pool({
-      connectionString: process.env.DATABASE_URL,
       ssl: {
         rejectUnauthorized: false
       }
