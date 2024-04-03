@@ -5,8 +5,8 @@ import express from 'express'
 const router = express.Router()
 
 router.get('/', getBlogs)
-router.get('/details/:id', getBlogDetails)
 router.get('/popular', getPopularBlogs)
+router.get('/details/:id', getBlogDetails)
 router.post('/', uploadMulter.single('coverImage'), addBlog)
 router.put('/:id', uploadMulter.single('coverImage'), updateBlog)
 router.delete('/:id', deleteBlog)
