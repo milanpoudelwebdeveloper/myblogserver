@@ -65,7 +65,7 @@ export const getBlogs = async (req: Request, res: Response) => {
         data: blogs.rows
       })
     } else {
-      return res.status(404).json({ message: 'No blogs found' })
+      return res.status(201).json({ message: 'No blogs found', data: [] })
     }
   } catch (e) {
     console.log('hey error while getting blogs', e)
