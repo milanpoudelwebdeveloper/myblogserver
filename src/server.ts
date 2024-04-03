@@ -8,27 +8,19 @@ import authRoutes from '@routes/auth'
 import userRoutes from '@routes/user'
 import stats from '@routes/stats'
 import cors from 'cors'
-import bcrypt from 'bcrypt'
+
 dotenv.config()
 
 const app = express()
 
 const PORT = process.env.PORT || 5000
 
-const allowedOrigins = ['http://localhost:3000', 'https://www.codewithmilan.com']
+const allowedOrigins = ['http://localhost:3000', process.env.CORS_ORIGIN!]
 
 app.use(express.json({ limit: '10mb' }))
 app.use(
   cors({
     credentials: true,
-    // origin: (origin, callback) => {
-    //   if (!origin) return callback(null, true)
-    //   if (allowedOrigins.indexOf(origin) !== -1) {
-    //     return callback(null, true)
-    //   }
-
-    //   return callback(new Error('Not allowed by CORS'))
-    // },
     origin: allowedOrigins,
     methods: 'POST, GET, PUT, DELETE',
     optionsSuccessStatus: 204,
@@ -46,15 +38,6 @@ app.use('/api/blog', blogRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/stats', stats)
-
-const getPassword = async () => {
-  const salt = await bcrypt.genSalt(10)
-  const password = process.env.SUPER_ADMIN_PASSWORD!
-  const hashedPassword = bcrypt.hashSync(password, salt)
-  console.log('hashed password is', hashedPassword)
-}
-
-getPassword()
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
