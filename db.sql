@@ -18,6 +18,7 @@ CREATE TABLE blog (
 
   //add new column published to blog table
   ALTER TABLE blog ADD COLUMN published BOOLEAN DEFAULT FALSE;
+  ALTER TABLE blog ADD COLUMN readCount INT DEFAULT 0;
 
 
 

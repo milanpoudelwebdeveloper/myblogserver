@@ -41,12 +41,12 @@ export const getBlogs = async (req: Request, res: Response) => {
     let blogs: any = []
     if (categoryId === 'all') {
       blogs = await db.query(
-        'SELECT blog.*, category.name AS categoryname FROM blog JOIN category ON blog.category=category.id ORDER BY blog.id DESC',
+        'SELECT blog.*, category.name AS categoryname FROM blog JOIN category ON blog.category=category.id ORDER BY blog.createdat DESC',
         []
       )
     } else {
       blogs = await db.query(
-        'SELECT blog.*, category.name AS categoryname FROM blog JOIN category ON blog.category=category.id WHERE category=$1 ORDER BY blog.id DESC',
+        'SELECT blog.*, category.name AS categoryname FROM blog JOIN category ON blog.category=category.id WHERE category=$1 ORDER BY blog.createdat DESC',
         [categoryId as string]
       )
     }
@@ -141,5 +141,49 @@ export const deleteBlog = async (req: Request, res: Response) => {
   } catch (e) {
     console.log('hey error while deleting blog', e)
     return res.status(500).json({ message: 'Something went wrong while deleting blog. Please try again' })
+  }
+}
+
+export const updateBlogReadCount = async (req: Request, res: Response) => {
+  const { id } = req.params
+  try {
+    const findBlog = await db.query('SELECT DISTINCT * FROM blog WHERE id=$1', [id])
+    if (findBlog.rows.length > 0) {
+      const foundBlog = findBlog.rows[0]
+      const query = 'UPDATE blog SET readcount=$1 WHERE id=$2 RETURNING *'
+      await db.query(query, [foundBlog?.readcount + 1, id])
+      return res.status(201).json({ message: 'Blog read count updated successfully' })
+    } else {
+      return res.status(404).json({ message: 'No blog found' })
+    }
+  } catch (e) {
+    console.log('hey error while updating blog read count', e)
+    return res.status(500).json({ message: 'Something went wrong while updating blog read count. Please try again' })
+  }
+}
+
+export const getPopularBlogs = async (_: Request, res: Response) => {
+  try {
+    const popularBlogs = await db.query('SELECT * FROM blog ORDER BY readcount DESC LIMIT 5', [])
+    if (popularBlogs.rows.length > 0) {
+      for (const blog of popularBlogs.rows) {
+        const getObjectParams = {
+          Bucket: bucketName,
+          Key: blog.coverimage
+        }
+        const command = new GetObjectCommand(getObjectParams)
+        const url = await getSignedUrl(s3, command)
+        blog.coverimage = url
+      }
+      return res.status(200).json({
+        message: 'Popular Blogs fetched successfully',
+        data: popularBlogs.rows
+      })
+    } else {
+      return res.status(404).json({ message: 'No popular blogs found' })
+    }
+  } catch (e) {
+    console.log('hey error while getting popular blogs', e)
+    return res.status(500).json({ message: 'Something went wrong while getting popular blogs. Please try again' })
   }
 }
