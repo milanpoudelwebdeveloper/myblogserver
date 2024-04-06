@@ -11,9 +11,8 @@ CREATE TABLE blog (
     title VARCHAR(100) NOT NULL,
     content TEXT NOT NULL,
     coverImage VARCHAR(200),
-    category INT NOT NULL,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (category) REFERENCES category(id) ON DELETE CASCADE
+    readCount INT DEFAULT 0
   );
 
   //add new column published to blog table
@@ -35,3 +34,12 @@ verified BOOLEAN DEFAULT FALSE,
 
 ALTER TABLE users ADD COLUMN country VARCHAR(100);
 ALTER TABLE users ADD COLUMN verified BOOLEAN DEFAULT FALSE;
+
+
+CREATE TABLE blogcategories (
+    id SERIAL NOT NULL PRIMARY KEY,
+    blogId INT NOT NULL,
+    categoryId INT NOT NULL,
+    FOREIGN KEY (blogId) REFERENCES blog(id) ON DELETE CASCADE,
+    FOREIGN KEY (categoryId) REFERENCES category(id) ON DELETE CASCADE
+);
