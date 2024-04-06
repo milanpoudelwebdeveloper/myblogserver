@@ -145,7 +145,6 @@ export const checkLogin = async (req: Request, res: Response) => {
           return res.status(401).json({ message: 'Unauthorized. Invalid or expired token' })
         }
         if (decoded) {
-          console.log('the decoded is', decoded)
           const query = 'SELECT * FROM users WHERE id=$1'
           const user = await db.query(query, [decoded.id])
           if (user.rows.length > 0) {

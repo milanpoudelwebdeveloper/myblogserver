@@ -1,3 +1,4 @@
+/* eslint-disable quotes */
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import db from '@root/db'
@@ -80,7 +81,13 @@ export const getBlogDetails = async (req: Request, res: Response) => {
   const { id } = req.params
   try {
     const blogDetails = await db.query('SELECT * FROM blog WHERE id=$1', [id])
+
     if (blogDetails?.rows?.length) {
+      const findRelatedCategories = await db.query(
+        `SELECT ARRAY_AGG(json_build_object('label', category.name, 'value', category.id)) AS categories FROM blogcategories LEFT JOIN category ON blogcategories.categoryid=category.id WHERE blogcategories.blogid=$1 GROUP BY blogcategories.blogid`,
+        [id]
+      )
+
       const foundBlog = blogDetails?.rows[0]
       const getObjectParams = {
         Bucket: bucketName,
@@ -89,9 +96,12 @@ export const getBlogDetails = async (req: Request, res: Response) => {
       const command = new GetObjectCommand(getObjectParams)
       const url = await getSignedUrl(s3, command)
       foundBlog.coverimage = url
+      const categories = findRelatedCategories?.rows[0]
+      const formattedCategories = categories['categories']
+
       return res.status(201).json({
         message: 'Blog Details fetched successfully',
-        data: foundBlog
+        data: { ...foundBlog, categories: formattedCategories }
       })
     } else {
       return res.status(404).json({ message: 'No blog details found' })
@@ -103,24 +113,26 @@ export const getBlogDetails = async (req: Request, res: Response) => {
 }
 
 export const updateBlog = async (req: Request, res: Response) => {
-  const { title, content, category, published } = req.body
+  const { title, content, published, categories } = req.body
   const { id } = req.params
-  console.log('the title here in', title)
 
   try {
     const findBlog = await db.query('SELECT DISTINCT * FROM blog WHERE id=$1', [id])
     if (findBlog.rows.length > 0) {
       const foundBlog = findBlog.rows[0]
-      console.log('the found blog', foundBlog)
-      const query = 'UPDATE blog SET title=$1, content=$2, coverImage=$3, category=$4, published=$5 WHERE id=$6 RETURNING *'
-      await db.query(query, [title, content, foundBlog.coverimage, category, published, id])
+      const query = 'UPDATE blog SET title=$1, content=$2, coverImage=$3, published=$4 WHERE id=$5 RETURNING *'
+      await db.query(query, [title, content, foundBlog.coverimage, published, id])
+      await db.query('DELETE FROM blogcategories WHERE blogid=$1', [id])
+      for (const category of categories) {
+        await db.query('INSERT INTO blogcategories (blogid, categoryid) VALUES ($1, $2)', [id, category])
+      }
       return res.status(201).json({ message: 'Blog updated successfully' })
     } else {
       return res.status(404).json({ message: 'No blog found' })
     }
   } catch (e) {
-    console.log('hey error while saving as draft', e)
-    return res.status(500).json({ message: 'Something went wrong while saving as draft. Please try again' })
+    console.log('hey error while updating the blog', e)
+    return res.status(500).json({ message: 'Something went wrong while updating the blog. Please try again' })
   }
 }
 
