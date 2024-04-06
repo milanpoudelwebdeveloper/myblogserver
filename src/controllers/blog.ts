@@ -8,9 +8,9 @@ const bucketName = process.env.BUCKET_NAME!
 
 export const addBlog = async (req: Request, res: Response) => {
   try {
-    const { title, content, category, published } = req.body
+    const { title, content, categories, published, featured } = req.body
     const coverImage = req.file
-    if (!title || !content || !coverImage || !category) {
+    if (!title || !content || !coverImage || !categories.length) {
       return res.status(400).json({ message: 'Please fill all the fields' })
     }
     const uploadParams = {
@@ -20,11 +20,14 @@ export const addBlog = async (req: Request, res: Response) => {
       ContentType: req?.file?.mimetype
     }
     await s3.send(new PutObjectCommand(uploadParams))
-    const query = 'INSERT INTO blog (title, content, coverImage, category, published) VALUES ($1, $2, $3, $4, $5) RETURNING *'
-    const blog = await db.query(query, [title, content, uploadParams.Key, category, published])
+    const query = 'INSERT INTO blog (title, content, coverImage, published, featured) VALUES ($1, $2, $3, $4, $5) RETURNING *'
+    const blog = await db.query(query, [title, content, uploadParams.Key, published, featured])
     if (blog.rows.length > 0) {
+      for (const category of categories) {
+        await db.query('INSERT INTO blogcategories (blogid, categoryid) VALUES ($1, $2)', [blog.rows[0].id, category])
+      }
       const message = published ? 'Blog published successfully' : 'Blog saved as draft successfully'
-      return res.status(201).json({ message: message, blog: blog.rows[0] })
+      return res.status(201).json({ message: message })
     } else {
       return res.status(500).json({ message: 'Something went wrong while performing an action.Please try again' })
     }
@@ -41,12 +44,12 @@ export const getBlogs = async (req: Request, res: Response) => {
     let blogs: any = []
     if (categoryId === 'all') {
       blogs = await db.query(
-        'SELECT blog.*, category.name AS categoryname FROM blog JOIN category ON blog.category=category.id ORDER BY blog.createdat DESC',
+        'SELECT blog.*, ARRAY_AGG(category.name) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id GROUP BY blog.id ORDER BY blog.createdat DESC',
         []
       )
     } else {
       blogs = await db.query(
-        'SELECT blog.*, category.name AS categoryname FROM blog JOIN category ON blog.category=category.id WHERE category=$1 ORDER BY blog.createdat DESC',
+        'SELECT blog.*, ARRAY_AGG(category.name) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id WHERE category.id=$1 GROUP BY blog.id ORDER BY blog.createdat DESC',
         [categoryId as string]
       )
     }
