@@ -12,12 +12,15 @@ CREATE TABLE blog (
     content TEXT NOT NULL,
     coverImage VARCHAR(200),
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    readCount INT DEFAULT 0
+    readCount INT DEFAULT 0,
+    published BOOLEAN DEFAULT FALSE
+
   );
 
   //add new column published to blog table
   ALTER TABLE blog ADD COLUMN published BOOLEAN DEFAULT FALSE;
   ALTER TABLE blog ADD COLUMN readCount INT DEFAULT 0;
+  ALTER TABLE blog ADD COLUMN featured BOOLEAN DEFAULT FALSE;
 
 
 

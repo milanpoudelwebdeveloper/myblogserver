@@ -45,7 +45,7 @@ export const getBlogs = async (req: Request, res: Response) => {
     let blogs: any = []
     if (categoryId === 'all') {
       blogs = await db.query(
-        'SELECT blog.*, ARRAY_AGG(category.name) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id GROUP BY blog.id ORDER BY blog.createdat DESC',
+        'SELECT blog.*, ARRAY_AGG(category.name) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id GROUP BY blog.id ORDER BY blog.createdat DESC LIMIT 4',
         []
       )
     } else {
