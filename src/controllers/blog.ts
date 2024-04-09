@@ -77,6 +77,31 @@ export const getBlogs = async (req: Request, res: Response) => {
   }
 }
 
+export const getFeaturedBlog = async (_: Request, res: Response) => {
+  try {
+    const featuredBlog = await db.query('SELECT * FROM blog WHERE featured=true ORDER BY createdat DESC LIMIT 1', [])
+    if (featuredBlog.rows.length > 0) {
+      const foundBlog = featuredBlog.rows[0]
+      const getObjectParams = {
+        Bucket: bucketName,
+        Key: foundBlog.coverimage
+      }
+      const command = new GetObjectCommand(getObjectParams)
+      const url = await getSignedUrl(s3, command)
+      foundBlog.coverimage = url
+      return res.status(200).json({
+        message: 'Featured Blog fetched successfully',
+        data: foundBlog
+      })
+    } else {
+      return res.status(404).json({ message: 'No featured blog found' })
+    }
+  } catch (e) {
+    console.log('hey error while getting featured blog', e)
+    return res.status(500).json({ message: 'Something went wrong while getting featured blog. Please try again' })
+  }
+}
+
 export const getBlogDetails = async (req: Request, res: Response) => {
   const { id } = req.params
   try {
