@@ -14,7 +14,7 @@ CREATE TABLE blog (
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     readCount INT DEFAULT 0,
     published BOOLEAN DEFAULT FALSE
-
+    featured BOOLEAN DEFAULT FALSE
   );
 
   //add new column published to blog table
