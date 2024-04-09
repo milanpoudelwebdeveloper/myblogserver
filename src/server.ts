@@ -15,7 +15,7 @@ const app = express()
 
 const PORT = process.env.PORT || 5000
 
-const allowedOrigins = ['http://localhost:3000', 'https://www.codewithmilan.com', 'https://codewithmilan.com']
+const allowedOrigins = [process.env.CORS_ORIGIN!, process.env.CORS_ORIGIN_PROD!, process.env.CORS_ORIGIN_PROD1!]
 
 app.use(express.json({ limit: '10mb' }))
 app.use(
