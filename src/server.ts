@@ -7,7 +7,7 @@ import blogRoutes from '@routes/blog'
 import authRoutes from '@routes/auth'
 import userRoutes from '@routes/user'
 import stats from '@routes/stats'
-import cors from 'cors'
+// import cors from 'cors'
 import bcrypt from 'bcrypt'
 
 dotenv.config()
@@ -16,18 +16,18 @@ const app = express()
 
 const PORT = process.env.PORT || 5000
 
-const allowedOrigins = ['http://localhost:3000', 'https://www.codewithmilan.com', 'https://codewithmilan.com']
+// const allowedOrigins = ['http://localhost:3000', 'https://www.codewithmilan.com', 'https://codewithmilan.com']
 
 app.use(express.json({ limit: '10mb' }))
-app.use(
-  cors({
-    credentials: true,
-    origin: allowedOrigins,
-    methods: 'POST, GET, PUT, DELETE',
-    optionsSuccessStatus: 204,
-    allowedHeaders: 'Content-Type'
-  })
-)
+// app.use(
+//   cors({
+//     credentials: true,
+//     origin: allowedOrigins,
+//     methods: 'POST, GET, PUT, DELETE',
+//     optionsSuccessStatus: 204,
+//     allowedHeaders: 'Content-Type'
+//   })
+// )
 
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
