@@ -10,15 +10,6 @@ export const getCategories = async (_: Request, res: Response) => {
   try {
     const categories = await db.query('SELECT * FROM category', [])
     if (categories.rows.length > 0) {
-      for (const category of categories.rows) {
-        const getObjectParams = {
-          Bucket: bucketName,
-          Key: category.image
-        }
-        const command = new GetObjectCommand(getObjectParams)
-        const url = await getSignedUrl(s3, command)
-        category.image = url
-      }
       return res.status(200).json({
         message: 'Categories fetched successfully',
         data: categories.rows
