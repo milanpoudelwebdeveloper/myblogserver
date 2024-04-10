@@ -94,7 +94,7 @@ export const getFeaturedBlog = async (_: Request, res: Response) => {
         data: foundBlog
       })
     } else {
-      return res.status(404).json({ message: 'No featured blog found' })
+      return res.status(204).json({ message: 'No featured blog found', data: null })
     }
   } catch (e) {
     console.log('hey error while getting featured blog', e)
