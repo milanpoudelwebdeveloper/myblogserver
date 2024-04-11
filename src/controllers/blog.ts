@@ -51,7 +51,7 @@ export const getBlogs = async (req: Request, res: Response) => {
       )
     } else {
       blogs = await db.query(
-        'SELECT blog.*, ARRAY_AGG(category.name) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id WHERE category.id=$1 GROUP BY blog.id ORDER BY blog.createdat DESC',
+        'SELECT blog.*, ARRAY_AGG(category.name) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id WHERE category.id=$1 GROUP BY blog.id ORDER BY blog.createdat DESC LIMIT 4',
         [categoryId as string]
       )
     }
@@ -205,7 +205,7 @@ export const updateBlogReadCount = async (req: Request, res: Response) => {
 
 export const getPopularBlogs = async (_: Request, res: Response) => {
   try {
-    const popularBlogs = await db.query('SELECT * FROM blog ORDER BY readcount DESC LIMIT 5', [])
+    const popularBlogs = await db.query('SELECT * FROM blog ORDER BY readcount DESC LIMIT 4', [])
     if (popularBlogs.rows.length > 0) {
       for (const blog of popularBlogs.rows) {
         const getObjectParams = {
