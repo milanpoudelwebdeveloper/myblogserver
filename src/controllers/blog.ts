@@ -1,5 +1,6 @@
 /* eslint-disable quotes */
-import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import db from '@root/db'
 import { s3 } from '@utils/imageUpload'
 import { Request, Response } from 'express'
@@ -55,6 +56,15 @@ export const getBlogs = async (req: Request, res: Response) => {
       )
     }
     if (blogs.rows.length > 0) {
+      for (const blog of blogs.rows) {
+        const getObjectParams = {
+          Bucket: bucketName,
+          Key: blog.coverimage
+        }
+        const command = new GetObjectCommand(getObjectParams)
+        const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
+        blog.coverimage = url
+      }
       return res.status(200).json({
         message: 'Blogs fetched successfully',
         data: blogs.rows
@@ -73,7 +83,13 @@ export const getFeaturedBlog = async (_: Request, res: Response) => {
     const featuredBlog = await db.query('SELECT * FROM blog WHERE featured=true ORDER BY createdat DESC LIMIT 1', [])
     if (featuredBlog.rows.length > 0) {
       const foundBlog = featuredBlog.rows[0]
-
+      const getObjectParams = {
+        Bucket: bucketName,
+        Key: foundBlog.coverimage
+      }
+      const command = new GetObjectCommand(getObjectParams)
+      const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
+      foundBlog.coverimage = url
       return res.status(200).json({
         message: 'Featured Blog fetched successfully',
         data: foundBlog
@@ -98,6 +114,14 @@ export const getBlogDetails = async (req: Request, res: Response) => {
         [id]
       )
       const foundBlog = blogDetails?.rows[0]
+      const getObjectParams = {
+        Bucket: bucketName,
+        Key: foundBlog.coverimage
+      }
+      const command = new GetObjectCommand(getObjectParams)
+
+      const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
+      foundBlog.coverimage = url
       const categories = findRelatedCategories?.rows[0]
       const formattedCategories = categories['categories']
 
@@ -183,6 +207,15 @@ export const getPopularBlogs = async (_: Request, res: Response) => {
   try {
     const popularBlogs = await db.query('SELECT * FROM blog ORDER BY readcount DESC LIMIT 5', [])
     if (popularBlogs.rows.length > 0) {
+      for (const blog of popularBlogs.rows) {
+        const getObjectParams = {
+          Bucket: bucketName,
+          Key: blog.coverimage
+        }
+        const command = new GetObjectCommand(getObjectParams)
+        const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
+        blog.coverimage = url
+      }
       return res.status(200).json({
         message: 'Popular Blogs fetched successfully',
         data: popularBlogs.rows
