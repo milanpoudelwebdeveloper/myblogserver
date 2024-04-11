@@ -21,6 +21,7 @@ export const addBlog = async (req: Request, res: Response) => {
       ContentType: req?.file?.mimetype
     }
     await s3.send(new PutObjectCommand(uploadParams))
+
     const query = 'INSERT INTO blog (title, content, coverImage, published, featured) VALUES ($1, $2, $3, $4, $5) RETURNING *'
     const blog = await db.query(query, [title, content, uploadParams.Key, published, featured])
     if (blog.rows.length > 0) {
@@ -112,7 +113,6 @@ export const getBlogDetails = async (req: Request, res: Response) => {
         `SELECT ARRAY_AGG(json_build_object('label', category.name, 'value', category.id)) AS categories FROM blogcategories LEFT JOIN category ON blogcategories.categoryid=category.id WHERE blogcategories.blogid=$1 GROUP BY blogcategories.blogid`,
         [id]
       )
-
       const foundBlog = blogDetails?.rows[0]
       const getObjectParams = {
         Bucket: bucketName,
