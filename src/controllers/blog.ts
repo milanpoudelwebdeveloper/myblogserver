@@ -61,7 +61,7 @@ export const getBlogs = async (req: Request, res: Response) => {
           Key: blog.coverimage
         }
         const command = new GetObjectCommand(getObjectParams)
-        const url = await getSignedUrl(s3, command)
+        const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
         blog.coverimage = url
       }
       return res.status(200).json({
@@ -87,7 +87,7 @@ export const getFeaturedBlog = async (_: Request, res: Response) => {
         Key: foundBlog.coverimage
       }
       const command = new GetObjectCommand(getObjectParams)
-      const url = await getSignedUrl(s3, command)
+      const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
       foundBlog.coverimage = url
       return res.status(200).json({
         message: 'Featured Blog fetched successfully',
@@ -119,7 +119,8 @@ export const getBlogDetails = async (req: Request, res: Response) => {
         Key: foundBlog.coverimage
       }
       const command = new GetObjectCommand(getObjectParams)
-      const url = await getSignedUrl(s3, command)
+
+      const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
       foundBlog.coverimage = url
       const categories = findRelatedCategories?.rows[0]
       const formattedCategories = categories['categories']
@@ -212,7 +213,7 @@ export const getPopularBlogs = async (_: Request, res: Response) => {
           Key: blog.coverimage
         }
         const command = new GetObjectCommand(getObjectParams)
-        const url = await getSignedUrl(s3, command)
+        const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
         blog.coverimage = url
       }
       return res.status(200).json({

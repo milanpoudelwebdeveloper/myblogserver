@@ -16,7 +16,7 @@ export const getCategories = async (_: Request, res: Response) => {
           Key: category.image
         }
         const command = new GetObjectCommand(getObjectParams)
-        const url = await getSignedUrl(s3, command)
+        const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
         category.image = url
       }
       return res.status(200).json({
@@ -42,7 +42,7 @@ export const getCategoryDetails = async (req: Request, res: Response) => {
         Key: category.rows[0].image
       }
       const command = new GetObjectCommand(getObjectParams)
-      const url = await getSignedUrl(s3, command)
+      const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
       category.rows[0].image = url
       return res.status(200).json({ message: 'Category fetched successfully', data: category.rows[0] })
     } else {
