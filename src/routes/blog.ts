@@ -5,6 +5,8 @@ import {
   getBlogs,
   getFeaturedBlog,
   getPopularBlogs,
+  getSavedPosts,
+  savePost,
   updateBlog,
   updateBlogReadCount
 } from '@controllers/blog'
@@ -17,7 +19,9 @@ router.get('/', getBlogs)
 router.get('/popular', getPopularBlogs)
 router.get('/featured', getFeaturedBlog)
 router.get('/details/:id', getBlogDetails)
+router.get('/saved/:id', getSavedPosts)
 router.post('/', uploadMulter.single('coverImage'), addBlog)
+router.post('/save/:id', savePost)
 router.put('/:id', uploadMulter.single('coverImage'), updateBlog)
 router.delete('/:id', deleteBlog)
 router.put('/read/:id', updateBlogReadCount)

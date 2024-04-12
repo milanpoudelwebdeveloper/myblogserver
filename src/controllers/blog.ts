@@ -228,3 +228,35 @@ export const getPopularBlogs = async (_: Request, res: Response) => {
     return res.status(500).json({ message: 'Something went wrong while getting popular blogs. Please try again' })
   }
 }
+
+export const savePost = async (req: Request, res: Response) => {
+  const blogId = req.params.id
+  const { userId } = req.body
+  try {
+    const query = 'INSERT INTO savedblog (userid, blogid) VALUES ($1, $2)'
+    await db.query(query, [userId, blogId])
+    return res.status(201).json({ message: 'Post saved successfully' })
+  } catch (e) {
+    console.log('hey error while saving post', e)
+    return res.status(500).json({ message: 'Something went wrong while saving post. Please try again' })
+  }
+}
+
+export const getSavedPosts = async (req: Request, res: Response) => {
+  const userId = req.params.id
+  try {
+    const query = `SELECT savedblog.*, blog.*, ARRAY_AGG(category.name) as categories FROM savedblog LEFT JOIN blog ON savedblog.blogid=blog.id LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id WHERE savedblog.userid=$1 GROUP BY savedblog.id, blog.id ORDER BY savedblog.createdat DESC`
+    const savedPosts = await db.query(query, [userId])
+    if (savedPosts.rows.length > 0) {
+      return res.status(200).json({
+        message: 'Saved Posts fetched successfully',
+        data: savedPosts.rows
+      })
+    } else {
+      return res.status(200).json({ message: 'No saved posts found', data: null })
+    }
+  } catch (e) {
+    console.log('hey error while getting saved posts', e)
+    return res.status(500).json({ message: 'Something went wrong while getting saved posts. Please try again' })
+  }
+}
