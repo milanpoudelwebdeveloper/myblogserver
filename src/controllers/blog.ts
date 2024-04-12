@@ -105,12 +105,14 @@ export const getFeaturedBlog = async (_: Request, res: Response) => {
 
 export const getBlogDetails = async (req: Request, res: Response) => {
   const { id } = req.params
-  const { userId } = req.body
+  const userId = req.query.userId
+
+  console.log('usr id', userId)
 
   try {
     const blogDetails = await db.query(
       'SELECT blog.*, EXISTS(SELECT * FROM savedblog sb WHERE sb.blogid=$1 AND sb.userid=$2) AS saved FROM blog WHERE id=$1',
-      [id, userId]
+      [id, userId as string]
     )
 
     if (blogDetails?.rows?.length) {
