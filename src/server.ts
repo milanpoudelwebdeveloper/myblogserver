@@ -8,7 +8,6 @@ import authRoutes from '@routes/auth'
 import userRoutes from '@routes/user'
 import stats from '@routes/stats'
 import cors from 'cors'
-import compression from 'compression'
 
 dotenv.config()
 
@@ -30,7 +29,6 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(morgan('dev'))
 app.set('trust proxy', 1)
-app.use(compression())
 app.use('/api/category', categoryRoutes)
 app.use('/api/blog', blogRoutes)
 app.use('/api/auth', authRoutes)
