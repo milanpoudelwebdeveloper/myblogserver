@@ -24,7 +24,7 @@ export const signUp = async (req: Request, res: Response) => {
     if (userCreated.rows.length > 0) {
       const token = generateJWTKey(userCreated.rows[0].id)
       const message = `Thank you for signing up with MyBlog. Please verify your account by clicking on the link below.
-      ${clientUrl}/verifyaccount?token=${token}`
+      ${clientUrl}/verify-account?token=${token}`
       sendEmail(email, 'Welcome to MyBlog', message)
       return res.status(201).json({ message: 'User created successfully. Please check your email and verify account before loggin in' })
     } else {
@@ -190,7 +190,7 @@ export const sendVerificationLink = async (req: Request, res: Response) => {
     if (user?.rows?.length) {
       const token = generateJWTKey(user.rows[0].id)
       const message = `Please verify your account by clicking on the link below.
-      ${clientUrl}/verifyaccount?token=${token}`
+      ${clientUrl}/verify-account?token=${token}`
       sendEmail(email, 'Welcome to MyBlog', message)
       return res.status(200).json({ message: 'Verification link sent successfully' })
     } else {
