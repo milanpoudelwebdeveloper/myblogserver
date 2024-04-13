@@ -9,9 +9,9 @@ const bucketName = process.env.BUCKET_NAME!
 
 export const addBlog = async (req: Request, res: Response) => {
   try {
-    const { title, content, categories, published, featured } = req.body
+    const { title, content, categories, published, featured, writtenBy } = req.body
     const coverImage = req.file
-    if (!title || !content || !coverImage || !categories.length) {
+    if (!title || !content || !coverImage || !categories.length || !writtenBy) {
       return res.status(400).json({ message: 'Please fill all the fields' })
     }
     const uploadParams = {
@@ -22,8 +22,9 @@ export const addBlog = async (req: Request, res: Response) => {
     }
     await s3.send(new PutObjectCommand(uploadParams))
 
-    const query = 'INSERT INTO blog (title, content, coverImage, published, featured) VALUES ($1, $2, $3, $4, $5) RETURNING *'
-    const blog = await db.query(query, [title, content, uploadParams.Key, published, featured])
+    const query =
+      'INSERT INTO blog (title, content, coverImage, published, featured, writtenBy) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *'
+    const blog = await db.query(query, [title, content, uploadParams.Key, published, featured, writtenBy])
     if (blog.rows.length > 0) {
       for (const category of categories) {
         await db.query('INSERT INTO blogcategories (blogid, categoryid) VALUES ($1, $2)', [blog.rows[0].id, category])
@@ -46,12 +47,12 @@ export const getBlogs = async (req: Request, res: Response) => {
     let blogs: any = []
     if (categoryId === 'all') {
       blogs = await db.query(
-        'SELECT blog.*, ARRAY_AGG(category.name) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id GROUP BY blog.id ORDER BY blog.createdat DESC LIMIT 4',
+        'SELECT blog.*, users.name, users.profileimage, ARRAY_AGG(category.name) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id  GROUP BY blog.id, users.id ORDER BY blog.createdat DESC LIMIT 4',
         []
       )
     } else {
       blogs = await db.query(
-        'SELECT blog.*, ARRAY_AGG(category.name) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id WHERE category.id=$1 GROUP BY blog.id ORDER BY blog.createdat DESC LIMIT 4',
+        'SELECT blog.*, users.name, users.profileimage, ARRAY_AGG(category.name) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id WHERE category.id=$1 GROUP BY blog.id, users.id ORDER BY blog.createdat DESC LIMIT 4',
         [categoryId as string]
       )
     }
@@ -80,7 +81,10 @@ export const getBlogs = async (req: Request, res: Response) => {
 
 export const getFeaturedBlog = async (_: Request, res: Response) => {
   try {
-    const featuredBlog = await db.query('SELECT * FROM blog WHERE featured=true ORDER BY createdat DESC LIMIT 1', [])
+    const featuredBlog = await db.query(
+      'SELECT blog.*, users.name, users.profileimage FROM blog  LEFT JOIN users ON blog.writtenby=users.id WHERE featured=true GROUP BY blog.id, users.id ORDER BY blog.createdat DESC LIMIT 1',
+      []
+    )
     if (featuredBlog.rows.length > 0) {
       const foundBlog = featuredBlog.rows[0]
       const getObjectParams = {
@@ -107,11 +111,9 @@ export const getBlogDetails = async (req: Request, res: Response) => {
   const { id } = req.params
   const userId = req.query.userId
 
-  console.log('usr id', userId)
-
   try {
     const blogDetails = await db.query(
-      'SELECT blog.*, EXISTS(SELECT * FROM savedblog sb WHERE sb.blogid=$1 AND sb.userid=$2) AS saved FROM blog WHERE id=$1',
+      'SELECT blog.*, users.name, users.profileimage, EXISTS(SELECT * FROM savedblog sb WHERE sb.blogid=$1 AND sb.userid=$2) AS saved FROM blog LEFT JOIN users ON blog.writtenby=users.id WHERE blog.id=$1 GROUP BY blog.id,users.id',
       [id, userId as string]
     )
 
@@ -273,7 +275,7 @@ export const getSavedPosts = async (req: Request, res: Response) => {
     return res.status(400).json({ message: 'Please login to view saved posts' })
   }
   try {
-    const query = `SELECT savedblog.*, blog.*, ARRAY_AGG(category.name) as categories FROM savedblog LEFT JOIN blog ON savedblog.blogid=blog.id LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id WHERE savedblog.userid=$1 GROUP BY savedblog.id, blog.id ORDER BY savedblog.createdat DESC`
+    const query = `SELECT savedblog.*, blog.*, users.name, users.profileimage, ARRAY_AGG(category.name) as categories FROM savedblog LEFT JOIN blog ON savedblog.blogid=blog.id LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON savedblog.userid=users.id WHERE savedblog.userid=$1 GROUP BY savedblog.id, blog.id, users.id ORDER BY savedblog.createdat DESC`
     const savedPosts = await db.query(query, [userId])
     if (savedPosts.rows.length > 0) {
       for (const post of savedPosts.rows) {
@@ -295,5 +297,45 @@ export const getSavedPosts = async (req: Request, res: Response) => {
   } catch (e) {
     console.log('hey error while getting saved posts', e)
     return res.status(500).json({ message: 'Something went wrong while getting saved posts. Please try again' })
+  }
+}
+
+export const getBlogsByUser = async (req: Request, res: Response) => {
+  const { categoryId } = req.query
+  const userId = req.params.id
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let blogs: any = []
+    if (categoryId === 'all') {
+      blogs = await db.query(
+        'SELECT blog.*, users.name, users.profileimage, ARRAY_AGG(category.name) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id WHERE blog.writtenby=$1 GROUP BY blog.id, users.id ORDER BY blog.createdat DESC LIMIT 4',
+        [userId]
+      )
+    } else {
+      blogs = await db.query(
+        'SELECT blog.*, users.name, users.profileimage, ARRAY_AGG(category.name) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id WHERE category.id=$2 AND WHERE blog.writtenby=$1 GROUP BY blog.id, users.id ORDER BY blog.createdat DESC LIMIT 4',
+        [categoryId as string, userId]
+      )
+    }
+    if (blogs.rows.length > 0) {
+      for (const blog of blogs.rows) {
+        const getObjectParams = {
+          Bucket: bucketName,
+          Key: blog.coverimage
+        }
+        const command = new GetObjectCommand(getObjectParams)
+        const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
+        blog.coverimage = url
+      }
+      return res.status(200).json({
+        message: 'Blogs fetched successfully',
+        data: blogs.rows
+      })
+    } else {
+      return res.status(201).json({ message: 'No blogs found', data: [] })
+    }
+  } catch (e) {
+    console.log('hey error while getting blogs', e)
+    return res.status(500).json({ message: 'Something went wrong while getting blogs. Please try again' })
   }
 }

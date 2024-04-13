@@ -15,12 +15,15 @@ CREATE TABLE blog (
     readCount INT DEFAULT 0,
     published BOOLEAN DEFAULT FALSE
     featured BOOLEAN DEFAULT FALSE
+    writtenBy INT NOT NULL DEFAULT 22,
+    FOREIGN KEY (writtenBy) REFERENCES users(id) ON DELETE CASCADE
   );
 
   //add new column published to blog table
   ALTER TABLE blog ADD COLUMN published BOOLEAN DEFAULT FALSE;
   ALTER TABLE blog ADD COLUMN readCount INT DEFAULT 0;
   ALTER TABLE blog ADD COLUMN featured BOOLEAN DEFAULT FALSE;
+  ALTER TABLE blog ADD COLUMN writtenBy INT NOT NULL DEFAULT 22;
 
 
 
