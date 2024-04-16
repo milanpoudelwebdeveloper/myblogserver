@@ -8,7 +8,7 @@ import authRoutes from '@routes/auth'
 import userRoutes from '@routes/user'
 import stats from '@routes/stats'
 import cors from 'cors'
-// import compression from 'compression'
+import compression from 'compression'
 
 dotenv.config()
 
@@ -30,8 +30,15 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(morgan('dev'))
 app.set('trust proxy', 1)
-// app.use(compression())
-console.log('it is up and rinning')
+app.use(compression())
+const pgConfig = {
+  user: process.env.PGUSER,
+  host: process.env.PGHOST,
+  password: process.env.PGPASSWORD,
+  database: process.env.PGDATABASE,
+  port: parseInt(process.env.PGPORT!)
+}
+console.log('pg config is', pgConfig)
 app.use('/api/category', categoryRoutes)
 app.use('/api/blog', blogRoutes)
 app.use('/api/auth', authRoutes)
