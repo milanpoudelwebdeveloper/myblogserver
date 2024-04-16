@@ -4,17 +4,19 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-const pool = (() => {
-  if (process.env.NODE_ENV === 'development') {
-    return new Pool({})
-  } else {
-    return new Pool({
-      ssl: {
-        rejectUnauthorized: false
-      }
-    })
-  }
-})()
+// const pool = (() => {
+//   if (process.env.NODE_ENV === 'development') {
+//     return new Pool({})
+//   } else {
+//     return new Pool({
+//       ssl: {
+//         rejectUnauthorized: false
+//       }
+//     })
+//   }
+// })()
+
+const pool = new Pool({})
 
 export default {
   query: (text: string, params: string[]) => pool.query(text, params)
