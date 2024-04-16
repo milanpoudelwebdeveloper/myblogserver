@@ -31,14 +31,6 @@ app.use(cookieParser())
 app.use(morgan('dev'))
 app.set('trust proxy', 1)
 app.use(compression())
-const pgConfig = {
-  user: process.env.PGUSER,
-  host: process.env.PGHOST,
-  password: process.env.PGPASSWORD,
-  database: process.env.PGDATABASE,
-  port: parseInt(process.env.PGPORT!)
-}
-console.log('pg config in server.ts is', pgConfig)
 app.use('/api/category', categoryRoutes)
 app.use('/api/blog', blogRoutes)
 app.use('/api/auth', authRoutes)
