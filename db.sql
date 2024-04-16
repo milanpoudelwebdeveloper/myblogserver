@@ -13,8 +13,8 @@ CREATE TABLE blog (
     coverImage VARCHAR(200),
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     readCount INT DEFAULT 0,
-    published BOOLEAN DEFAULT FALSE
-    featured BOOLEAN DEFAULT FALSE
+    published BOOLEAN DEFAULT FALSE,
+    featured BOOLEAN DEFAULT FALSE,
     writtenBy INT NOT NULL DEFAULT 22,
     FOREIGN KEY (writtenBy) REFERENCES users(id) ON DELETE CASCADE
   );
@@ -34,8 +34,8 @@ password VARCHAR(100) NOT NULL,
 name VARCHAR(100) NOT NULL,
 role VARCHAR(100) NOT NULL DEFAULT 'user',
 country VARCHAR(100),
-profileImage VARCHAR(400)
-verified BOOLEAN DEFAULT FALSE,
+profileImage VARCHAR(400),
+verified BOOLEAN DEFAULT FALSE
 );
 
 ALTER TABLE users ADD COLUMN country VARCHAR(100);
