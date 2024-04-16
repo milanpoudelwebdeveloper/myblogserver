@@ -2,6 +2,14 @@ import db from '@root/db'
 import { Request, Response } from 'express'
 
 export const getStats = async (_: Request, res: Response) => {
+  const pgConfig = {
+    user: process.env.PGUSER!,
+    host: process.env.PGHOST!,
+    password: process.env.PGPASSWORD!,
+    database: process.env.PGDATABASE!,
+    port: parseInt(process.env.PGPORT!)
+  }
+  console.log('pg config is', pgConfig)
   try {
     const query = 'SELECT COUNT(*) as totalBlogs FROM blog'
     const blogCount = await db.query(query, [])
