@@ -27,3 +27,4 @@ jobs:
       - run: |
           touch .env
           echo "${{ secrets.BLOG_SERVER_KEY }}" > .env
+      - run: pm2 restart myblogserver
