@@ -7,6 +7,7 @@ import blogRoutes from '@routes/blog'
 import authRoutes from '@routes/auth'
 import userRoutes from '@routes/user'
 import stats from '@routes/stats'
+import messageRoutes from '@routes/messages'
 import cors from 'cors'
 import compression from 'compression'
 
@@ -36,6 +37,7 @@ app.use('/api/blog', blogRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/stats', stats)
+app.use('/api/messages', messageRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
