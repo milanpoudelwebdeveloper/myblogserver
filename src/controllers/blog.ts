@@ -82,7 +82,7 @@ export const getBlogs = async (req: Request, res: Response) => {
 export const getFeaturedBlog = async (_: Request, res: Response) => {
   try {
     const featuredBlog = await db.query(
-      'SELECT blog.*, users.name, users.profileimage FROM blog  LEFT JOIN users ON blog.writtenby=users.id WHERE featured=true GROUP BY blog.id, users.id ORDER BY blog.createdat DESC LIMIT 1',
+      'SELECT blog.*, users.name, users.profileimage, ARRAY_AGG(category.name) AS categories FROM blog  LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id WHERE featured=true GROUP BY blog.id, users.id ORDER BY blog.createdat DESC LIMIT 1',
       []
     )
     if (featuredBlog.rows.length > 0) {
