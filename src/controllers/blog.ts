@@ -1,6 +1,5 @@
 /* eslint-disable quotes */
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
 import db from '@root/db'
 import { s3 } from '@utils/imageUpload'
 import { Request, Response } from 'express'
@@ -58,13 +57,7 @@ export const getBlogs = async (req: Request, res: Response) => {
     }
     if (blogs.rows.length > 0) {
       for (const blog of blogs.rows) {
-        const getObjectParams = {
-          Bucket: bucketName,
-          Key: blog.coverimage
-        }
-        const command = new GetObjectCommand(getObjectParams)
-        const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
-        blog.coverimage = url
+        blog.coverimage = process.env.CDN_URL + blog.coverimage
       }
       return res.status(200).json({
         message: 'Blogs fetched successfully',
@@ -87,13 +80,7 @@ export const getFeaturedBlog = async (_: Request, res: Response) => {
     )
     if (featuredBlog.rows.length > 0) {
       const foundBlog = featuredBlog.rows[0]
-      const getObjectParams = {
-        Bucket: bucketName,
-        Key: foundBlog.coverimage
-      }
-      const command = new GetObjectCommand(getObjectParams)
-      const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
-      foundBlog.coverimage = url
+      foundBlog.coverimage = process.env.CDN_URL + foundBlog.coverimage
       return res.status(200).json({
         message: 'Featured Blog fetched successfully',
         data: foundBlog
@@ -123,14 +110,7 @@ export const getBlogDetails = async (req: Request, res: Response) => {
         [id]
       )
       const foundBlog = blogDetails?.rows[0]
-      const getObjectParams = {
-        Bucket: bucketName,
-        Key: foundBlog.coverimage
-      }
-      const command = new GetObjectCommand(getObjectParams)
-
-      const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
-      foundBlog.coverimage = url
+      foundBlog.coverimage = process.env.CDN_URL + foundBlog.coverimage
       const categories = findRelatedCategories?.rows[0]
       const formattedCategories = categories['categories']
       return res.status(201).json({
@@ -216,13 +196,7 @@ export const getPopularBlogs = async (_: Request, res: Response) => {
     const popularBlogs = await db.query('SELECT * FROM blog ORDER BY readcount DESC LIMIT 4', [])
     if (popularBlogs.rows.length > 0) {
       for (const blog of popularBlogs.rows) {
-        const getObjectParams = {
-          Bucket: bucketName,
-          Key: blog.coverimage
-        }
-        const command = new GetObjectCommand(getObjectParams)
-        const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
-        blog.coverimage = url
+        blog.coverimage = process.env.CDN_URL + blog.coverimage
       }
       return res.status(200).json({
         message: 'Popular Blogs fetched successfully',
@@ -279,13 +253,7 @@ export const getSavedPosts = async (req: Request, res: Response) => {
     const savedPosts = await db.query(query, [userId])
     if (savedPosts.rows.length > 0) {
       for (const post of savedPosts.rows) {
-        const getObjectParams = {
-          Bucket: bucketName,
-          Key: post.coverimage
-        }
-        const command = new GetObjectCommand(getObjectParams)
-        const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
-        post.coverimage = url
+        post.coverimage = process.env.CDN_URL + post.coverimage
       }
       return res.status(200).json({
         message: 'Saved Posts fetched successfully',
@@ -319,13 +287,7 @@ export const getBlogsByUser = async (req: Request, res: Response) => {
     }
     if (blogs.rows.length > 0) {
       for (const blog of blogs.rows) {
-        const getObjectParams = {
-          Bucket: bucketName,
-          Key: blog.coverimage
-        }
-        const command = new GetObjectCommand(getObjectParams)
-        const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
-        blog.coverimage = url
+        blog.coverimage = process.env.CDN_URL + blog.coverimage
       }
       return res.status(200).json({
         message: 'Blogs fetched successfully',

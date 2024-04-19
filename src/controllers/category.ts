@@ -1,8 +1,7 @@
-import { GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
+import { PutObjectCommand } from '@aws-sdk/client-s3'
 import db from '@root/db'
 import { s3 } from '@utils/imageUpload'
 import { Request, Response } from 'express'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 const bucketName = process.env.BUCKET_NAME!
 
@@ -11,13 +10,7 @@ export const getCategories = async (_: Request, res: Response) => {
     const categories = await db.query('SELECT * FROM category', [])
     if (categories.rows.length > 0) {
       for (const category of categories.rows) {
-        const getObjectParams = {
-          Bucket: bucketName,
-          Key: category.image
-        }
-        const command = new GetObjectCommand(getObjectParams)
-        const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
-        category.image = url
+        category.image = process.env.CDN_URL + category.image
       }
       return res.status(200).json({
         message: 'Categories fetched successfully',
@@ -37,13 +30,7 @@ export const getCategoryDetails = async (req: Request, res: Response) => {
     const { id } = req.params
     const category = await db.query('SELECT * FROM category WHERE id=$1', [id])
     if (category.rows.length > 0) {
-      const getObjectParams = {
-        Bucket: bucketName,
-        Key: category.rows[0].image
-      }
-      const command = new GetObjectCommand(getObjectParams)
-      const url = await getSignedUrl(s3, command, { expiresIn: 518400 })
-      category.rows[0].image = url
+      category.rows[0].image = process.env.CDN_URL + category.rows[0].image
       return res.status(200).json({ message: 'Category fetched successfully', data: category.rows[0] })
     } else {
       return res.status(404).json({ message: 'Category not found' })
