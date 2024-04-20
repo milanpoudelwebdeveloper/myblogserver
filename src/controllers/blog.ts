@@ -46,12 +46,12 @@ export const getBlogs = async (req: Request, res: Response) => {
     let blogs: any = []
     if (categoryId === 'all') {
       blogs = await db.query(
-        'SELECT blog.*, users.name, users.profileimage, ARRAY_AGG(category.name) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id  GROUP BY blog.id, users.id ORDER BY blog.createdat DESC LIMIT 4',
+        `SELECT blog.*, users.name, users.profileimage, ARRAY_AGG(json_build_object('label', category.name, 'value', category.id)) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id  GROUP BY blog.id, users.id ORDER BY blog.createdat DESC LIMIT 4`,
         []
       )
     } else {
       blogs = await db.query(
-        'SELECT blog.*, users.name, users.profileimage, ARRAY_AGG(category.name) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id WHERE category.id=$1 GROUP BY blog.id, users.id ORDER BY blog.createdat DESC LIMIT 4',
+        `SELECT blog.*, users.name, users.profileimage, ARRAY_AGG(json_build_object('label', category.name, 'value', category.id)) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id WHERE category.id=$1 GROUP BY blog.id, users.id ORDER BY blog.createdat DESC LIMIT 4`,
         [categoryId as string]
       )
     }
@@ -59,6 +59,7 @@ export const getBlogs = async (req: Request, res: Response) => {
       for (const blog of blogs.rows) {
         blog.coverimage = process.env.CDN_URL + blog.coverimage
       }
+      console.log('hey blogs row are', blogs.rows)
       return res.status(200).json({
         message: 'Blogs fetched successfully',
         data: blogs.rows
@@ -75,7 +76,7 @@ export const getBlogs = async (req: Request, res: Response) => {
 export const getFeaturedBlog = async (_: Request, res: Response) => {
   try {
     const featuredBlog = await db.query(
-      'SELECT blog.*, users.name, users.profileimage, ARRAY_AGG(category.name) AS categories FROM blog  LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id WHERE featured=true GROUP BY blog.id, users.id ORDER BY blog.createdat DESC LIMIT 1',
+      `SELECT blog.*, users.name, users.profileimage, ARRAY_AGG(json_build_object('label', category.name, 'value', category.id)) AS categories FROM blog  LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id WHERE featured=true GROUP BY blog.id, users.id ORDER BY blog.createdat DESC LIMIT 1`,
       []
     )
     if (featuredBlog.rows.length > 0) {
@@ -249,7 +250,7 @@ export const getSavedPosts = async (req: Request, res: Response) => {
     return res.status(400).json({ message: 'Please login to view saved posts' })
   }
   try {
-    const query = `SELECT savedblog.*, blog.*, users.name, users.profileimage, ARRAY_AGG(category.name) as categories FROM savedblog LEFT JOIN blog ON savedblog.blogid=blog.id LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id WHERE savedblog.userid=$1 GROUP BY savedblog.id, blog.id, users.id ORDER BY savedblog.createdat DESC`
+    const query = `SELECT savedblog.*, blog.*, users.name, users.profileimage, ARRAY_AGG(json_build_object('label', category.name, 'value', category.id)) AS categories FROM savedblog LEFT JOIN blog ON savedblog.blogid=blog.id LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id WHERE savedblog.userid=$1 GROUP BY savedblog.id, blog.id, users.id ORDER BY savedblog.createdat DESC`
     const savedPosts = await db.query(query, [userId])
     if (savedPosts.rows.length > 0) {
       for (const post of savedPosts.rows) {
@@ -276,12 +277,12 @@ export const getBlogsByUser = async (req: Request, res: Response) => {
     let blogs: any = []
     if (categoryId === 'all') {
       blogs = await db.query(
-        'SELECT blog.*, users.name, users.profileimage, ARRAY_AGG(category.name) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id WHERE blog.writtenby=$1 GROUP BY blog.id, users.id ORDER BY blog.createdat DESC LIMIT 4',
+        `SELECT blog.*, users.name, users.profileimage, ARRAY_AGG(json_build_object('label', category.name, 'value', category.id)) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id WHERE blog.writtenby=$1 GROUP BY blog.id, users.id ORDER BY blog.createdat DESC LIMIT 4`,
         [userId]
       )
     } else {
       blogs = await db.query(
-        'SELECT blog.*, users.name, users.profileimage, ARRAY_AGG(category.name) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id WHERE category.id=$1 AND blog.writtenby=$2 GROUP BY blog.id, users.id ORDER BY blog.createdat DESC LIMIT 4',
+        `SELECT blog.*, users.name, users.profileimage, ARRAY_AGG(json_build_object('label', category.name, 'value', category.id)) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id WHERE category.id=$1 AND blog.writtenby=$2 GROUP BY blog.id, users.id ORDER BY blog.createdat DESC LIMIT 4`,
         [categoryId as string, userId]
       )
     }
