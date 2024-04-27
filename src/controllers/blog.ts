@@ -40,29 +40,38 @@ export const addBlog = async (req: Request, res: Response) => {
 }
 
 export const getBlogs = async (req: Request, res: Response) => {
-  const { categoryId } = req.query
+  const { categoryId, limit, currentPage } = req.query
+
+  const finalLimit = limit ? parseInt(limit as string) : 6
+  const finalPage = currentPage ? parseInt(currentPage as string) : 1
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let blogs: any = []
     if (categoryId === 'all') {
       blogs = await db.query(
-        `SELECT blog.*, users.name, users.profileimage, ARRAY_AGG(json_build_object('label', category.name, 'value', category.id)) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id  GROUP BY blog.id, users.id ORDER BY blog.createdat DESC`,
+        `SELECT blog.*, count(*) OVER() AS full_count, users.name, users.profileimage, ARRAY_AGG(json_build_object('label', category.name, 'value', category.id)) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id  GROUP BY blog.id, users.id ORDER BY blog.createdat DESC
+        LIMIT ${finalLimit} OFFSET (${finalPage} - 1) * ${finalLimit}`,
         []
       )
     } else {
       blogs = await db.query(
-        `SELECT blog.*, users.name, users.profileimage, ARRAY_AGG(json_build_object('label', category.name, 'value', category.id)) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id WHERE category.id=$1 GROUP BY blog.id, users.id ORDER BY blog.createdat DESC`,
+        `SELECT blog.*, count(*) OVER() AS full_count, users.name, users.profileimage, ARRAY_AGG(json_build_object('label', category.name, 'value', category.id)) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id WHERE category.id=$1 GROUP BY blog.id, users.id ORDER BY blog.createdat DESC
+        LIMIT ${finalLimit} OFFSET (${finalPage} - 1) * ${finalLimit}`,
         [categoryId as string]
       )
     }
+    const totalBlogsCount = blogs.rows[0].full_count
+    const totalPages = Math.ceil(totalBlogsCount / finalLimit)
+
     if (blogs.rows.length > 0) {
       for (const blog of blogs.rows) {
         blog.coverimage = process.env.CDN_URL + blog.coverimage
       }
-      console.log('hey blogs row are', blogs.rows)
+
       return res.status(200).json({
         message: 'Blogs fetched successfully',
-        data: blogs.rows
+        data: blogs.rows,
+        totalPages: totalPages
       })
     } else {
       return res.status(201).json({ message: 'No blogs found', data: [] })
@@ -194,7 +203,7 @@ export const updateBlogReadCount = async (req: Request, res: Response) => {
 
 export const getPopularBlogs = async (_: Request, res: Response) => {
   try {
-    const popularBlogs = await db.query('SELECT * FROM blog ORDER BY readcount DESC', [])
+    const popularBlogs = await db.query('SELECT * FROM blog ORDER BY readcount DESC LIMIT 4', [])
     if (popularBlogs.rows.length > 0) {
       for (const blog of popularBlogs.rows) {
         blog.coverimage = process.env.CDN_URL + blog.coverimage
@@ -300,5 +309,22 @@ export const getBlogsByUser = async (req: Request, res: Response) => {
   } catch (e) {
     console.log('hey error while getting blogs', e)
     return res.status(500).json({ message: 'Something went wrong while getting blogs. Please try again' })
+  }
+}
+
+export const uploadImage = async (req: Request, res: Response) => {
+  const file = req.file
+  try {
+    const uploadParams = {
+      Bucket: bucketName,
+      Key: file?.originalname + '-' + Date.now(),
+      Body: file?.buffer,
+      ContentType: file?.mimetype
+    }
+    await s3.send(new PutObjectCommand(uploadParams))
+    return res.status(201).json({ message: 'Image uploaded successfully', imageUrl: process.env.CDN_URL + uploadParams.Key })
+  } catch (error) {
+    console.log('hey error while uploading image', error)
+    return res.status(500).json({ message: 'Something went wrong while uploading image. Please try again' })
   }
 }
