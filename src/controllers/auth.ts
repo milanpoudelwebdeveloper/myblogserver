@@ -94,6 +94,7 @@ export const loginUser = async (req: Request, res: Response) => {
         const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_KEY!, { expiresIn: '1d' })
         res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true, sameSite: 'none' })
         res.cookie('accessToken', accessToken, { httpOnly: true, secure: true, sameSite: 'none' })
+        res.cookie('codeWithMilanId', user.id, { httpOnly: true, secure: true, sameSite: 'none' })
         return res.status(201).json({
           message: 'Logged in successfully',
           user: {
@@ -124,6 +125,10 @@ export const logOutUser = async (req: Request, res: Response) => {
       sameSite: 'none'
     })
     res.clearCookie('accessToken', {
+      secure: true,
+      sameSite: 'none'
+    })
+    res.clearCookie('codeWithMilanId', {
       secure: true,
       sameSite: 'none'
     })
