@@ -6,7 +6,7 @@ import jwt, { VerifyErrors } from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 
 const clientUrl = process.env.CLIENT_URL
-const environment = process.env.NODE_ENV
+// const environment = process.env.NODE_ENV
 
 export const signUp = async (req: Request, res: Response) => {
   const { name, email, password, country } = req.body
@@ -95,12 +95,12 @@ export const loginUser = async (req: Request, res: Response) => {
         const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_KEY!, { expiresIn: '1d' })
         res.cookie('refreshToken', refreshToken, {
           httpOnly: true,
-          secure: environment === 'production',
+          secure: false,
           sameSite: 'lax'
         })
         res.cookie('accessToken', accessToken, {
           httpOnly: true,
-          secure: environment === 'production',
+          secure: false,
           sameSite: 'lax'
         })
         return res.status(201).json({
@@ -129,12 +129,12 @@ export const loginUser = async (req: Request, res: Response) => {
 export const logOutUser = async (req: Request, res: Response) => {
   try {
     res.clearCookie('refreshToken', {
-      secure: environment === 'production',
-      sameSite: environment === 'production' ? 'none' : 'lax'
+      secure: false,
+      sameSite: 'lax'
     })
     res.clearCookie('accessToken', {
-      secure: environment === 'production',
-      sameSite: environment === 'production' ? 'none' : 'lax'
+      secure: false,
+      sameSite: 'lax'
     })
     return res.status(200).json({ message: 'Logged out successfully' })
   } catch (e) {
