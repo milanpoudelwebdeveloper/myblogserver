@@ -14,7 +14,6 @@ export const publicAccess = (req: Request, res: Response, next: NextFunction) =>
   console.log('in the public access token is', req.cookies.accessToken)
   try {
     const token = req.cookies.accessToken
-    console.log('the token in unauthverifyToken is', token) // Moved inside the conditional block
     if (!token) {
       return next()
     }
