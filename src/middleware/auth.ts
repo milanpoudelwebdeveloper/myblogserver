@@ -11,6 +11,7 @@ declare global {
 }
 
 export const publicAccess = (req: Request, res: Response, next: NextFunction) => {
+  console.log('in the public access token is', req.cookies.accessToken)
   try {
     const token = req.cookies.accessToken
     console.log('the token in unauthverifyToken is', token) // Moved inside the conditional block
@@ -34,6 +35,7 @@ export const publicAccess = (req: Request, res: Response, next: NextFunction) =>
 }
 
 export const verifyToken = (req: Request, res: Response, next: NextFunction) => {
+  console.log('in verify token the access token is', req.cookies.accessToken)
   try {
     const token = req.cookies.accessToken
     console.log('the token in verifyToken is', token)

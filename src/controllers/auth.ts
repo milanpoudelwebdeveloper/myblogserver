@@ -136,6 +136,7 @@ export const logOutUser = async (req: Request, res: Response) => {
 
 export const checkLogin = async (req: Request, res: Response) => {
   const refreshToken = req.cookies.refreshToken
+  console.log('the refresh token is', refreshToken)
   try {
     if (refreshToken) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
