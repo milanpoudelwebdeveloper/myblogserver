@@ -95,15 +95,11 @@ export const loginUser = async (req: Request, res: Response) => {
         const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_KEY!, { expiresIn: '1d' })
         res.cookie('refreshToken', refreshToken, {
           httpOnly: true,
-          secure: environment === 'production',
-          sameSite: environment === 'production' ? 'none' : 'lax',
           path: '/',
           domain: '.codewithmilan.com'
         })
         res.cookie('accessToken', accessToken, {
           httpOnly: true,
-          secure: environment === 'production',
-          sameSite: environment === 'production' ? 'none' : 'lax',
           path: '/',
           domain: '.codewithmilan.com'
         })
@@ -134,15 +130,11 @@ export const logOutUser = async (req: Request, res: Response) => {
   try {
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: environment === 'production',
-      sameSite: environment === 'production' ? 'none' : 'lax',
       path: '/',
       domain: '.codewithmilan.com'
     })
     res.clearCookie('accessToken', {
       httpOnly: true,
-      secure: environment === 'production',
-      sameSite: environment === 'production' ? 'none' : 'lax',
       path: '/',
       domain: '.codewithmilan.com'
     })
@@ -174,8 +166,6 @@ export const checkLogin = async (req: Request, res: Response) => {
             const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_KEY!, { expiresIn: '10min' })
             res.cookie('accessToken', accessToken, {
               httpOnly: true,
-              secure: environment === 'production',
-              sameSite: environment === 'production' ? 'none' : 'lax',
               path: '/',
               domain: '.codewithmilan.com'
             })
