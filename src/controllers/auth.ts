@@ -142,6 +142,8 @@ export const logOutUser = async (req: Request, res: Response) => {
 export const checkLogin = async (req: Request, res: Response) => {
   const refreshToken = req.cookies.refreshToken
   console.log('the refresh token is', refreshToken)
+  console.log('the user id is', req.cookies.codeWithMilanId)
+  console.log('the access token is', req.cookies.accessToken)
 
   try {
     if (refreshToken) {
