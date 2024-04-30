@@ -6,6 +6,7 @@ import jwt, { VerifyErrors } from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 
 const clientUrl = process.env.CLIENT_URL
+const environment = process.env.NODE_ENV
 
 export const signUp = async (req: Request, res: Response) => {
   const { name, email, password, country } = req.body
@@ -92,8 +93,16 @@ export const loginUser = async (req: Request, res: Response) => {
         }
         const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_KEY!, { expiresIn: '10min' })
         const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_KEY!, { expiresIn: '1d' })
-        res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true, sameSite: 'none' })
-        res.cookie('accessToken', accessToken, { httpOnly: true, secure: true, sameSite: 'none' })
+        res.cookie('refreshToken', refreshToken, {
+          httpOnly: true,
+          secure: environment === 'production',
+          sameSite: environment === 'production' ? 'none' : 'lax'
+        })
+        res.cookie('accessToken', accessToken, {
+          httpOnly: true,
+          secure: environment === 'production',
+          sameSite: environment === 'production' ? 'none' : 'lax'
+        })
         return res.status(201).json({
           message: 'Logged in successfully',
           user: {
@@ -120,12 +129,12 @@ export const loginUser = async (req: Request, res: Response) => {
 export const logOutUser = async (req: Request, res: Response) => {
   try {
     res.clearCookie('refreshToken', {
-      secure: true,
-      sameSite: 'none'
+      secure: environment === 'production',
+      sameSite: environment === 'production' ? 'none' : 'lax'
     })
     res.clearCookie('accessToken', {
-      secure: true,
-      sameSite: 'none'
+      secure: environment === 'production',
+      sameSite: environment === 'production' ? 'none' : 'lax'
     })
     return res.status(200).json({ message: 'Logged out successfully' })
   } catch (e) {
