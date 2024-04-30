@@ -6,7 +6,7 @@ import jwt, { VerifyErrors } from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 
 const clientUrl = process.env.CLIENT_URL
-// const environment = process.env.NODE_ENV
+const environment = process.env.NODE_ENV
 
 export const signUp = async (req: Request, res: Response) => {
   const { name, email, password, country } = req.body
@@ -95,12 +95,12 @@ export const loginUser = async (req: Request, res: Response) => {
         const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_KEY!, { expiresIn: '1d' })
         res.cookie('refreshToken', refreshToken, {
           httpOnly: true,
-          secure: false,
+          secure: environment === 'production',
           sameSite: 'lax'
         })
         res.cookie('accessToken', accessToken, {
           httpOnly: true,
-          secure: false,
+          secure: environment === 'production',
           sameSite: 'lax'
         })
         return res.status(201).json({
@@ -129,11 +129,13 @@ export const loginUser = async (req: Request, res: Response) => {
 export const logOutUser = async (req: Request, res: Response) => {
   try {
     res.clearCookie('refreshToken', {
-      secure: false,
+      httpOnly: true,
+      secure: environment === 'production',
       sameSite: 'lax'
     })
     res.clearCookie('accessToken', {
-      secure: false,
+      httpOnly: true,
+      secure: environment === 'production',
       sameSite: 'lax'
     })
     return res.status(200).json({ message: 'Logged out successfully' })
@@ -162,7 +164,7 @@ export const checkLogin = async (req: Request, res: Response) => {
               role: decoded.role
             }
             const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_KEY!, { expiresIn: '10min' })
-            res.cookie('accessToken', accessToken, { httpOnly: true, secure: true, sameSite: 'none' })
+            res.cookie('accessToken', accessToken, { httpOnly: true, secure: environment === 'production', sameSite: 'lax' })
             const userData = user.rows[0]
             return res.status(200).json({
               message: 'User found',
