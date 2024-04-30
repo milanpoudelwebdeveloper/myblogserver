@@ -97,13 +97,13 @@ export const loginUser = async (req: Request, res: Response) => {
           httpOnly: true,
           secure: environment === 'production',
           sameSite: environment === 'production' ? 'none' : 'lax',
-          domain: environment === 'production' ? 'https://www.codewithmilan.com' : ''
+          path: '/'
         })
         res.cookie('accessToken', accessToken, {
           httpOnly: true,
           secure: environment === 'production',
           sameSite: environment === 'production' ? 'none' : 'lax',
-          domain: environment === 'production' ? 'https://www.codewithmilan.com' : ''
+          path: '/'
         })
         return res.status(201).json({
           message: 'Logged in successfully',
@@ -134,13 +134,13 @@ export const logOutUser = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: environment === 'production',
       sameSite: environment === 'production' ? 'none' : 'lax',
-      domain: environment === 'production' ? 'https://www.codewithmilan.com' : ''
+      path: '/'
     })
     res.clearCookie('accessToken', {
       httpOnly: true,
       secure: environment === 'production',
       sameSite: environment === 'production' ? 'none' : 'lax',
-      domain: environment === 'production' ? 'https://www.codewithmilan.com' : ''
+      path: '/'
     })
     return res.status(200).json({ message: 'Logged out successfully' })
   } catch (e) {
@@ -172,7 +172,7 @@ export const checkLogin = async (req: Request, res: Response) => {
               httpOnly: true,
               secure: environment === 'production',
               sameSite: environment === 'production' ? 'none' : 'lax',
-              domain: environment === 'production' ? 'https://www.codewithmilan.com' : ''
+              path: '/'
             })
             const userData = user.rows[0]
             return res.status(200).json({
