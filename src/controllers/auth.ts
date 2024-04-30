@@ -96,12 +96,12 @@ export const loginUser = async (req: Request, res: Response) => {
         res.cookie('refreshToken', refreshToken, {
           httpOnly: true,
           secure: environment === 'production',
-          sameSite: environment === 'production' ? 'none' : 'lax'
+          sameSite: 'lax'
         })
         res.cookie('accessToken', accessToken, {
           httpOnly: true,
           secure: environment === 'production',
-          sameSite: environment === 'production' ? 'none' : 'lax'
+          sameSite: 'lax'
         })
         return res.status(201).json({
           message: 'Logged in successfully',
