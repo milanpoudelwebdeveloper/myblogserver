@@ -106,7 +106,8 @@ export const getFeaturedBlog = async (_: Request, res: Response) => {
 
 export const getBlogDetails = async (req: Request, res: Response) => {
   const { id } = req.params
-  const userId = req.query.userId
+  const userId = req?.user?.id
+
   try {
     const blogDetails = await db.query(
       'SELECT blog.*, users.name, users.profileimage, EXISTS(SELECT * FROM savedblog sb WHERE sb.blogid=$1 AND sb.userid=$2) AS saved FROM blog LEFT JOIN users ON blog.writtenby=users.id WHERE blog.id=$1 GROUP BY blog.id,users.id',
