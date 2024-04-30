@@ -94,7 +94,6 @@ export const loginUser = async (req: Request, res: Response) => {
         const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_KEY!, { expiresIn: '1d' })
         res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: true, sameSite: 'none' })
         res.cookie('accessToken', accessToken, { httpOnly: true, secure: true, sameSite: 'none' })
-        res.cookie('codeWithMilanId', user.id, { httpOnly: true, secure: true, sameSite: 'none' })
         return res.status(201).json({
           message: 'Logged in successfully',
           user: {
@@ -128,10 +127,6 @@ export const logOutUser = async (req: Request, res: Response) => {
       secure: true,
       sameSite: 'none'
     })
-    res.clearCookie('codeWithMilanId', {
-      secure: true,
-      sameSite: 'none'
-    })
     return res.status(200).json({ message: 'Logged out successfully' })
   } catch (e) {
     console.log('Hey something when wrong controller:logOutUser', e)
@@ -141,10 +136,6 @@ export const logOutUser = async (req: Request, res: Response) => {
 
 export const checkLogin = async (req: Request, res: Response) => {
   const refreshToken = req.cookies.refreshToken
-  console.log('the refresh token is', refreshToken)
-  console.log('the user id is', req.cookies.codeWithMilanId)
-  console.log('the access token is', req.cookies.accessToken)
-
   try {
     if (refreshToken) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

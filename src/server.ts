@@ -26,9 +26,9 @@ app.use(
     allowedHeaders: 'Content-Type, Authorization'
   })
 )
+app.use(cookieParser())
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
-app.use(cookieParser())
 app.use(morgan('dev'))
 app.set('trust proxy', 1)
 app.use(compression())
