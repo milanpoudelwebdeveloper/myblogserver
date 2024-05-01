@@ -95,19 +95,17 @@ export const loginUser = async (req: Request, res: Response) => {
         const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_KEY!, { expiresIn: '1d' })
         res.cookie('refreshToken', refreshToken, {
           httpOnly: true,
-secure: process.env.NODE_ENV === "production",
-maxAge: 60 * 60 * 24 * 31,
-sameSite: 'none',
-          path: '/',
-          domain: '.codewithmilan.com'
+          secure: environment === 'production',
+          maxAge: 60 * 60 * 24 * 31,
+          sameSite: 'none',
+          path: '/'
         })
         res.cookie('accessToken', accessToken, {
           httpOnly: true,
-secure: process.env.NODE_ENV === "production",
-maxAge: 60 * 60 * 24 * 31,
-sameSite: 'none',
-          path: '/',
-          domain: '.codewithmilan.com'
+          secure: environment === 'production',
+          maxAge: 60 * 60 * 24 * 31,
+          sameSite: 'none',
+          path: '/'
         })
         return res.status(201).json({
           message: 'Logged in successfully',
@@ -136,13 +134,17 @@ export const logOutUser = async (req: Request, res: Response) => {
   try {
     res.clearCookie('refreshToken', {
       httpOnly: true,
+      secure: environment === 'production',
       path: '/',
-      domain: '.codewithmilan.com'
+      sameSite: 'none',
+      maxAge: 0
     })
     res.clearCookie('accessToken', {
       httpOnly: true,
+      secure: environment === 'production',
       path: '/',
-      domain: '.codewithmilan.com'
+      sameSite: 'none',
+      maxAge: 0
     })
     return res.status(200).json({ message: 'Logged out successfully' })
   } catch (e) {
@@ -172,11 +174,10 @@ export const checkLogin = async (req: Request, res: Response) => {
             const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_KEY!, { expiresIn: '10min' })
             res.cookie('accessToken', accessToken, {
               httpOnly: true,
-secure: process.env.NODE_ENV === "production",
-maxAge: 60 * 60 * 24 * 31,
-sameSite: 'none',
-          path: '/',
-          domain: '.codewithmilan.com'
+              secure: environment === 'production',
+              maxAge: 60 * 60 * 24 * 31,
+              sameSite: 'none',
+              path: '/'
             })
             const userData = user.rows[0]
             return res.status(200).json({
