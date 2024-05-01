@@ -50,7 +50,7 @@ export const getBlogs = async (req: Request, res: Response) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let blogs: any = []
     if (fetchAll) {
-      blogs = await db.query(`SELECT blog.id, blog.title, blog.metatitle FROM blog ORDER BY blog.createdat DESC`, [])
+      blogs = await db.query(`SELECT blog.id, blog.title, blog.metatitle, blog.createdat FROM blog ORDER BY blog.createdat DESC`, [])
     } else if (categoryId === 'all') {
       blogs = await db.query(
         `SELECT blog.*, count(*) OVER() AS full_count, users.name, users.profileimage, ARRAY_AGG(json_build_object('label', category.name, 'value', category.id)) AS categories FROM blog LEFT JOIN blogcategories ON blog.id=blogcategories.blogid LEFT JOIN category ON blogcategories.categoryid=category.id LEFT JOIN users ON blog.writtenby=users.id  GROUP BY blog.id, users.id ORDER BY blog.createdat DESC
