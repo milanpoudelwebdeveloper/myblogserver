@@ -98,14 +98,16 @@ export const loginUser = async (req: Request, res: Response) => {
           secure: environment === 'production',
           maxAge: 60 * 60 * 24 * 31,
           sameSite: environment === 'production' ? 'none' : 'lax',
-          path: '/'
+          path: '/',
+          domain: environment === 'production' ? 'codewithmilan.com' : undefined
         })
         res.cookie('accessToken', accessToken, {
           httpOnly: true,
           secure: environment === 'production',
           maxAge: 60 * 60 * 24 * 31,
           sameSite: environment === 'production' ? 'none' : 'lax',
-          path: '/'
+          path: '/',
+          domain: environment === 'production' ? 'codewithmilan.com' : undefined
         })
         return res.status(201).json({
           message: 'Logged in successfully',
@@ -137,14 +139,16 @@ export const logOutUser = async (req: Request, res: Response) => {
       secure: environment === 'production',
       path: '/',
       sameSite: 'none',
-      maxAge: 0
+      maxAge: 0,
+      domain: environment === 'production' ? 'codewithmilan.com' : undefined
     })
     res.clearCookie('accessToken', {
       httpOnly: true,
       secure: environment === 'production',
       path: '/',
       sameSite: 'none',
-      maxAge: 0
+      maxAge: 0,
+      domain: environment === 'production' ? 'codewithmilan.com' : undefined
     })
     return res.status(200).json({ message: 'Logged out successfully' })
   } catch (e) {
@@ -155,7 +159,6 @@ export const logOutUser = async (req: Request, res: Response) => {
 
 export const checkLogin = async (req: Request, res: Response) => {
   const refreshToken = req.cookies.refreshToken
-  console.log('the refresh token is', refreshToken)
   try {
     if (refreshToken) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -177,7 +180,8 @@ export const checkLogin = async (req: Request, res: Response) => {
               secure: environment === 'production',
               maxAge: 60 * 60 * 24 * 31,
               sameSite: 'none',
-              path: '/'
+              path: '/',
+              domain: environment === 'production' ? 'codewithmilan.com' : undefined
             })
             const userData = user.rows[0]
             return res.status(200).json({
