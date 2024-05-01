@@ -14,7 +14,7 @@ export const addBlog = async (req: Request, res: Response) => {
     if (!title || !content || !coverImage || !categories.length || !writtenBy) {
       return res.status(400).json({ message: 'Please fill all the fields' })
     }
-    const metaTitle = slugify(title, { lower: true })
+    const metaTitle = slugify(title, { lower: true, remove: /[*+~.()'"!:@]/g })
     const uploadParams = {
       Bucket: bucketName,
       Key: req?.file?.originalname + '-' + Date.now(),
@@ -140,7 +140,7 @@ export const getBlogDetails = async (req: Request, res: Response) => {
 export const updateBlog = async (req: Request, res: Response) => {
   const { title, content, published, categories } = req.body
   const { id } = req.params
-  const metaTitle = slugify(title, { lower: true })
+  const metaTitle = slugify(title, { lower: true, remove: /[*+~.()'"!:@]/g })
 
   try {
     const findBlog = await db.query('SELECT DISTINCT * FROM blog WHERE id=$1', [id])
