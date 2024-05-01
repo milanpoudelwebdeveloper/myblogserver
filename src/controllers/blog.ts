@@ -3,6 +3,7 @@ import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
 import db from '@root/db'
 import { s3 } from '@utils/imageUpload'
 import { Request, Response } from 'express'
+import slugify from 'slugify'
 
 const bucketName = process.env.BUCKET_NAME!
 
@@ -13,6 +14,7 @@ export const addBlog = async (req: Request, res: Response) => {
     if (!title || !content || !coverImage || !categories.length || !writtenBy) {
       return res.status(400).json({ message: 'Please fill all the fields' })
     }
+    const metaTitle = slugify(title, { lower: true })
     const uploadParams = {
       Bucket: bucketName,
       Key: req?.file?.originalname + '-' + Date.now(),
@@ -22,8 +24,8 @@ export const addBlog = async (req: Request, res: Response) => {
     await s3.send(new PutObjectCommand(uploadParams))
 
     const query =
-      'INSERT INTO blog (title, content, coverImage, published, featured, writtenBy) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *'
-    const blog = await db.query(query, [title, content, uploadParams.Key, published, featured, writtenBy])
+      'INSERT INTO blog (title, metaTitle, content, coverImage, published, featured, writtenBy) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *'
+    const blog = await db.query(query, [title, metaTitle, content, uploadParams.Key, published, featured, writtenBy])
     if (blog.rows.length > 0) {
       for (const category of categories) {
         await db.query('INSERT INTO blogcategories (blogid, categoryid) VALUES ($1, $2)', [blog.rows[0].id, category])
@@ -138,13 +140,14 @@ export const getBlogDetails = async (req: Request, res: Response) => {
 export const updateBlog = async (req: Request, res: Response) => {
   const { title, content, published, categories } = req.body
   const { id } = req.params
+  const metaTitle = slugify(title, { lower: true })
 
   try {
     const findBlog = await db.query('SELECT DISTINCT * FROM blog WHERE id=$1', [id])
     if (findBlog.rows.length > 0) {
       const foundBlog = findBlog.rows[0]
-      const query = 'UPDATE blog SET title=$1, content=$2, coverImage=$3, published=$4 WHERE id=$5 RETURNING *'
-      await db.query(query, [title, content, foundBlog.coverimage, published, id])
+      const query = 'UPDATE blog SET title=$1, content=$2, coverImage=$3, published=$4, metaTitle=$5 WHERE id=$6 RETURNING *'
+      await db.query(query, [title, content, foundBlog.coverimage, published, metaTitle, id])
       await db.query('DELETE FROM blogcategories WHERE blogid=$1', [id])
       for (const category of categories) {
         await db.query('INSERT INTO blogcategories (blogid, categoryid) VALUES ($1, $2)', [id, category])
