@@ -106,12 +106,11 @@ export const getFeaturedBlog = async (_: Request, res: Response) => {
 
 export const getBlogDetails = async (req: Request, res: Response) => {
   const { id } = req.params
-  const userId = req?.user?.id
 
   try {
     const blogDetails = await db.query(
-      'SELECT blog.*, users.name, users.profileimage, EXISTS(SELECT * FROM savedblog sb WHERE sb.blogid=$1 AND sb.userid=$2) AS saved FROM blog LEFT JOIN users ON blog.writtenby=users.id WHERE blog.id=$1 GROUP BY blog.id,users.id',
-      [id, userId as string]
+      'SELECT blog.*, users.name, users.profileimage FROM blog LEFT JOIN users ON blog.writtenby=users.id WHERE blog.id=$1 GROUP BY blog.id,users.id',
+      [id]
     )
 
     if (blogDetails?.rows?.length) {
@@ -326,5 +325,26 @@ export const uploadImage = async (req: Request, res: Response) => {
   } catch (error) {
     console.log('hey error while uploading image', error)
     return res.status(500).json({ message: 'Something went wrong while uploading image. Please try again' })
+  }
+}
+
+export const isBlogLiked = async (req: Request, res: Response) => {
+  const { id } = req.params
+  const userId = req?.user?.id
+  if (!userId) {
+    return res.status(400).json({ message: 'Please login to check' })
+  }
+  try {
+    const query = 'SELECT * FROM savedblog sb WHERE sb.blogid=$1 AND sb.userid=$2'
+    const likedBlog = await db.query(query, [id, userId])
+    console.log('likedBlog', likedBlog)
+    if (likedBlog.rows.length > 0) {
+      return res.status(200).json({ message: 'Blog is liked', data: true })
+    } else {
+      return res.status(200).json({ message: 'Blog is not liked', data: false })
+    }
+  } catch (e) {
+    console.log('hey error while checking blog liked', e)
+    return res.status(500).json({ message: 'Something went wrong while checking blog liked. Please try again' })
   }
 }

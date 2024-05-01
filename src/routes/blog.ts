@@ -7,6 +7,7 @@ import {
   getFeaturedBlog,
   getPopularBlogs,
   getSavedPosts,
+  isBlogLiked,
   savePost,
   unSavePost,
   updateBlog,
@@ -25,6 +26,7 @@ router.get('/featured', getFeaturedBlog)
 router.get('/details/:id', publicAccess, getBlogDetails)
 router.get('/user/:id', verifyToken, getBlogsByUser)
 router.get('/saved/:id', verifyToken, getSavedPosts)
+router.get('/isliked/:id', verifyToken, isBlogLiked)
 router.post('/', uploadMulter.single('coverImage'), addBlog)
 router.post('/save/:id', verifyToken, savePost)
 router.post('/image/upload', uploadMulter.single('contentImage'), uploadImage)

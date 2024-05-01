@@ -96,18 +96,14 @@ export const loginUser = async (req: Request, res: Response) => {
         res.cookie('refreshToken', refreshToken, {
           httpOnly: true,
           secure: environment === 'production',
-          maxAge: 60 * 60 * 24 * 31,
           sameSite: environment === 'production' ? 'none' : 'lax',
-          path: '/',
-          domain: environment === 'production' ? 'codewithmilan.com' : undefined
+          path: '/'
         })
         res.cookie('accessToken', accessToken, {
           httpOnly: true,
           secure: environment === 'production',
-          maxAge: 60 * 60 * 24 * 31,
           sameSite: environment === 'production' ? 'none' : 'lax',
-          path: '/',
-          domain: environment === 'production' ? 'codewithmilan.com' : undefined
+          path: '/'
         })
         return res.status(201).json({
           message: 'Logged in successfully',
@@ -138,16 +134,13 @@ export const logOutUser = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: environment === 'production',
       path: '/',
-      sameSite: 'none',
-      maxAge: 0,
-      domain: environment === 'production' ? 'codewithmilan.com' : undefined
+      sameSite: 'none'
     })
     res.clearCookie('accessToken', {
       httpOnly: true,
       secure: environment === 'production',
       path: '/',
       sameSite: 'none',
-      maxAge: 0,
       domain: environment === 'production' ? 'codewithmilan.com' : undefined
     })
     return res.status(200).json({ message: 'Logged out successfully' })
@@ -178,10 +171,8 @@ export const checkLogin = async (req: Request, res: Response) => {
             res.cookie('accessToken', accessToken, {
               httpOnly: true,
               secure: environment === 'production',
-              maxAge: 60 * 60 * 24 * 31,
-              sameSite: 'none',
-              path: '/',
-              domain: environment === 'production' ? 'codewithmilan.com' : undefined
+              sameSite: environment === 'production' ? 'none' : 'lax',
+              path: '/'
             })
             const userData = user.rows[0]
             return res.status(200).json({
