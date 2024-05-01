@@ -94,17 +94,17 @@ export const loginUser = async (req: Request, res: Response) => {
         const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_KEY!, { expiresIn: '10min' })
         const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_KEY!, { expiresIn: '1d' })
         res.cookie('refreshToken', refreshToken, {
-          httpOnly: true,
+          domain: '.codewithmilan.com',
           secure: environment === 'production',
           maxAge: 60 * 60 * 24 * 31,
-          sameSite: 'none',
+          sameSite: environment === 'production' ? 'none' : 'lax',
           path: '/'
         })
         res.cookie('accessToken', accessToken, {
-          httpOnly: true,
+          domain: '.codewithmilan.com',
           secure: environment === 'production',
           maxAge: 60 * 60 * 24 * 31,
-          sameSite: 'none',
+          sameSite: environment === 'production' ? 'none' : 'lax',
           path: '/'
         })
         return res.status(201).json({
@@ -173,7 +173,7 @@ export const checkLogin = async (req: Request, res: Response) => {
             }
             const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_KEY!, { expiresIn: '10min' })
             res.cookie('accessToken', accessToken, {
-              httpOnly: true,
+              domain: '.codewithmilan.com',
               secure: environment === 'production',
               maxAge: 60 * 60 * 24 * 31,
               sameSite: 'none',
