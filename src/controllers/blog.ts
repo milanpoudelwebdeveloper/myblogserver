@@ -144,12 +144,26 @@ export const updateBlog = async (req: Request, res: Response) => {
   const { id } = req.params
   const metaTitle = slugify(title, { lower: true, remove: /[*+~.()'"!:@]/g })
 
+  let finalFile
+  const image = req.file
+
+  if (image) {
+    const uploadParams = {
+      Bucket: bucketName,
+      Key: image?.originalname + '-' + Date.now(),
+      Body: image?.buffer,
+      ContentType: image?.mimetype
+    }
+    await s3.send(new PutObjectCommand(uploadParams))
+    finalFile = uploadParams.Key
+  }
+
   try {
     const findBlog = await db.query('SELECT DISTINCT * FROM blog WHERE id=$1', [id])
     if (findBlog.rows.length > 0) {
-      const foundBlog = findBlog.rows[0]
-      const query = 'UPDATE blog SET title=$1, content=$2, coverImage=$3, published=$4, metaTitle=$5 WHERE id=$6 RETURNING *'
-      await db.query(query, [title, content, foundBlog.coverimage, published, metaTitle, id])
+      const query =
+        'UPDATE blog SET title=$1, content=$2, coverimage = COALESCE($3, coverimage), published=$4, metaTitle=$5 WHERE id=$6 RETURNING *'
+      await db.query(query, [title, content, finalFile, published, metaTitle, id])
       await db.query('DELETE FROM blogcategories WHERE blogid=$1', [id])
       for (const category of categories) {
         await db.query('INSERT INTO blogcategories (blogid, categoryid) VALUES ($1, $2)', [id, category])

@@ -157,7 +157,7 @@ export const checkLogin = async (req: Request, res: Response) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY!, async (err: VerifyErrors | null, decoded: any) => {
         if (err) {
-          return res.status(401).json({ message: 'Unauthorized. Invalid or expired token' })
+          return res.status(403).json({ message: 'Unauthorized. Invalid or expired token' })
         }
         if (decoded) {
           const query = 'SELECT * FROM users WHERE id=$1'
@@ -192,7 +192,7 @@ export const checkLogin = async (req: Request, res: Response) => {
         }
       })
     } else {
-      return res.status(401).json({ message: 'Unauthorized' })
+      return res.status(403).json({ message: 'Unauthorized' })
     }
   } catch (e) {
     console.log('Hey something when wrong controller:checkLogin', e)
