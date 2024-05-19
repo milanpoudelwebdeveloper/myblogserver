@@ -69,9 +69,13 @@ export const updateUser = async (req: Request, res: Response) => {
     if (!foundUser?.rowCount || !foundUser) {
       return res.status(404).json({ message: 'User with that id not found' })
     }
-    const query = 'UPDATE users SET name=$1, country=$2, gender=$3, email=$4, bio=$5 WHERE id=$6'
-    await db.query(query, [name, country, gender, email, bio, id])
-    return res.status(200).json({ message: 'User updated successfully' })
+    const query =
+      'UPDATE users SET name=$1, country=$2, gender=$3, email=$4, bio=$5 WHERE id=$6 RETURNING name, email, country, gender, bio'
+    const updatedUser = await db.query(query, [name, country, gender, email, bio, id])
+    if (!updatedUser?.rowCount) {
+      return res.status(500).json({ message: 'Something went wrong while updating user' })
+    }
+    return res.status(200).json({ message: 'User updated successfully', user: updatedUser.rows[0] })
   } catch (e) {
     console.log('Something went wrong: Controller: updateUser', e)
     return res.status(500).json({ message: 'Something went wrong while updating user' })
