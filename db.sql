@@ -9,14 +9,16 @@ CREATE TABLE category (
 CREATE TABLE blog (
     id SERIAL NOT NULL PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
+    metaTitle VARCHAR(300) NOT NULL DEFAULT 'My Blog',
     content TEXT NOT NULL,
     coverImage VARCHAR(200),
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     readCount INT DEFAULT 0,
     published BOOLEAN DEFAULT FALSE,
     featured BOOLEAN DEFAULT FALSE,
-    writtenBy INT NOT NULL DEFAULT 22,
+    writtenBy INT NOT NULL DEFAULT,
     FOREIGN KEY (writtenBy) REFERENCES users(id) ON DELETE CASCADE
+
   );
 
   //add new column published to blog table
@@ -43,6 +45,8 @@ verified BOOLEAN DEFAULT FALSE
 ALTER TABLE users ADD COLUMN country VARCHAR(100);
 ALTER TABLE users ADD COLUMN verified BOOLEAN DEFAULT FALSE;
 
+ALTER TABLE users ADD COLUMN gender VARCHAR(100);
+ALTER TABLE users ADD COLUMN bio TEXT;
 
 CREATE TABLE blogcategories (
     id SERIAL NOT NULL PRIMARY KEY,
