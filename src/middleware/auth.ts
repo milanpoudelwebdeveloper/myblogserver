@@ -58,10 +58,11 @@ export const adminAccess = (req: Request, res: Response, next: NextFunction) => 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jwt.verify(token, process.env.JWT_ACCESS_KEY!, (err: any, user: any) => {
       if (err) return res.status(401).json({ message: 'Token is not valid' })
-      if (user.role !== 'admin' || user.role !== 'superadmin')
-        return res.status(403).json({ message: 'You are not permitted to perform this action' })
-      req.user = user
-      next()
+      if (user?.role === 'admin' || user?.role === 'superadmin') {
+        req.user = user
+        return next()
+      }
+      return res.status(403).json({ message: 'You are not permitted to perform this action' })
     })
   } catch (e) {
     console.log('Hey something when wrong middleware:adminAccess', e)
