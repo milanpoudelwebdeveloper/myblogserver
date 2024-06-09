@@ -24,6 +24,45 @@ const clearCookies = (res: Response) => {
   })
 }
 
+const message = (clientUrl: string, token: string) => {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Account</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f7f7f7; font-family: Arial, sans-serif;">
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 30px auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+        <tr>
+            <td align="center" style="background-color: #4CAF50; color: white; padding: 10px; border-top-left-radius: 10px; border-top-right-radius: 10px;">
+                <h1 style="margin: 0; font-size: 24px;">Welcome to MyBlog!</h1>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 20px; line-height: 1.6; color: #333;">
+                <p>Dear User,</p>
+                <p>Thank you for signing up with MyBlog. To complete your registration, please verify your account by clicking the button below:</p>
+                <p style="text-align: center;">
+                    <a href="${clientUrl}/verify-account?token=${token}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-size: 16px;">Verify Account</a>
+                </p>
+                <p>If you did not sign up for this account, please disregard this email.</p>
+                <p>Best regards,<br>The MyBlog Team</p>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: center; color: #777; font-size: 12px; margin-top: 20px;">
+                <p>&copy; 2024 MyBlog. All rights reserved.</p>
+                <p><a href="#" style="color: #777; text-decoration: none;">Privacy Policy</a> | <a href="#" style="color: #777; text-decoration: none;">Terms of Service</a></p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+`
+}
+
 export const signUp = async (req: Request, res: Response) => {
   const { name, email, password, country } = req.body
   try {
@@ -40,9 +79,8 @@ export const signUp = async (req: Request, res: Response) => {
     const userCreated = await db.query(query, [name, email, hashedPassword, country])
     if (userCreated.rows.length > 0) {
       const token = generateJWTKey(userCreated.rows[0].id)
-      const message = `Thank you for signing up with MyBlog. Please verify your account by clicking on the link below.
-      ${clientUrl}/verify-account?token=${token}`
-      sendEmail(email, 'Welcome to MyBlog', message)
+      const emailMessage = message(clientUrl!, token)
+      sendEmail(email, 'Welcome to Code With Milan', emailMessage)
       return res.status(201).json({ message: 'User created successfully. Please check your email and verify account before loggin in' })
     } else {
       return res.status(500).json({ message: 'Something went wrong while signing up. Please try again' })

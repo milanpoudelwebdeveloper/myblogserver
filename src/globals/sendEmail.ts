@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-const region = 'us-east-2'
+const region = 'ap-south-1'
 const awsAccessKey = process.env.AWS_ACCESS_KEY!
 const awsSecret = process.env.AWS_SECRET!
 const awsSender = process.env.EMAIL_SENDER!
