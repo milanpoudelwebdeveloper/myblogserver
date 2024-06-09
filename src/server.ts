@@ -8,6 +8,7 @@ import authRoutes from '@routes/auth'
 import userRoutes from '@routes/user'
 import stats from '@routes/stats'
 import messageRoutes from '@routes/messages'
+import subscriptionRoutes from '@routes/subscription'
 import cors from 'cors'
 import compression from 'compression'
 
@@ -38,6 +39,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/stats', stats)
 app.use('/api/messages', messageRoutes)
+app.use('/api/subscriptions', subscriptionRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)

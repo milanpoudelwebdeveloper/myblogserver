@@ -8,6 +8,22 @@ import bcrypt from 'bcrypt'
 const clientUrl = process.env.CLIENT_URL
 const environment = process.env.NODE_ENV
 
+const clearCookies = (res: Response) => {
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: environment === 'production',
+    path: '/',
+    sameSite: 'none'
+  })
+  res.clearCookie('accessToken', {
+    httpOnly: true,
+    secure: environment === 'production',
+    path: '/',
+    sameSite: 'none',
+    domain: environment === 'production' ? 'codewithmilan.com' : undefined
+  })
+}
+
 export const signUp = async (req: Request, res: Response) => {
   const { name, email, password, country } = req.body
   try {
@@ -75,7 +91,8 @@ export const loginUser = async (req: Request, res: Response) => {
     const foundUser = await db.query(query, [email])
     if (foundUser.rows.length > 0) {
       const user = foundUser.rows[0]
-      const isMatch = await bcrypt.compare(password, user.password)
+      const { password: userPassword, ...rest } = user
+      const isMatch = await bcrypt.compare(password, userPassword)
       if (!isMatch) {
         return res.status(400).json({
           message: 'Incorrect password'
@@ -108,12 +125,7 @@ export const loginUser = async (req: Request, res: Response) => {
         return res.status(201).json({
           message: 'Logged in successfully',
           user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            country: user.country,
-            role: user.role,
-            profileimage: user.profileimage
+            ...rest
           }
         })
       }
@@ -130,19 +142,7 @@ export const loginUser = async (req: Request, res: Response) => {
 
 export const logOutUser = async (req: Request, res: Response) => {
   try {
-    res.clearCookie('refreshToken', {
-      httpOnly: true,
-      secure: environment === 'production',
-      path: '/',
-      sameSite: 'none'
-    })
-    res.clearCookie('accessToken', {
-      httpOnly: true,
-      secure: environment === 'production',
-      path: '/',
-      sameSite: 'none',
-      domain: environment === 'production' ? 'codewithmilan.com' : undefined
-    })
+    clearCookies(res)
     return res.status(200).json({ message: 'Logged out successfully' })
   } catch (e) {
     console.log('Hey something when wrong controller:logOutUser', e)
@@ -175,16 +175,11 @@ export const checkLogin = async (req: Request, res: Response) => {
               path: '/'
             })
             const userData = user.rows[0]
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { password, ...rest } = userData
             return res.status(200).json({
               message: 'User found',
-              user: {
-                id: userData.id,
-                name: userData.name,
-                email: userData.email,
-                country: userData.country,
-                role: userData.role,
-                profileimage: userData.profileimage
-              }
+              user: { ...rest }
             })
           } else {
             return res.status(401).json({ message: 'User not found with that id' })
@@ -244,5 +239,43 @@ export const changePassword = async (req: Request, res: Response) => {
   } catch (e) {
     console.log('hey error while changing password', e)
     return res.status(500).json({ message: 'Something went wrong while changing password. Please try again' })
+  }
+}
+
+export const updatePassword = async (req: Request, res: Response) => {
+  const { oldPassword, password } = req.body
+  try {
+    const query = 'SELECT * FROM users WHERE id = $1'
+    const findUser = await db.query(query, [req?.user?.id])
+    if (findUser?.rows?.length) {
+      const isMatch = await bcrypt.compare(oldPassword, findUser?.rows[0]?.password)
+      if (!isMatch) {
+        return res?.status(400).json({
+          message: 'Your old password is incorrect. Please provide correct password.'
+        })
+      }
+      const isSamePassword = await bcrypt.compare(password, findUser?.rows[0]?.password)
+      if (isSamePassword) {
+        return res?.status(400).json({
+          message: 'Your new password cannot be the same as the old password. Please provide a different password.'
+        })
+      }
+
+      const salt = await bcrypt.genSalt(10)
+      const hashedPassword = bcrypt.hashSync(password, salt)
+      const updateQuery = 'UPDATE users SET password=$1 WHERE id=$2'
+      await db.query(updateQuery, [hashedPassword, req?.user?.id])
+      clearCookies(res)
+      return res?.status(200).json({
+        message: 'Password updated successfully'
+      })
+    } else {
+      return res?.status(400).json({
+        message: 'User Not Found with that id'
+      })
+    }
+  } catch (e) {
+    console.log('hey error while updating password', e)
+    return res.status(500).json({ message: 'Something went wrong while updating password. Please try again' })
   }
 }

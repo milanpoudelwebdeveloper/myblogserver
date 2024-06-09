@@ -9,6 +9,7 @@ CREATE TABLE category (
 CREATE TABLE blog (
     id SERIAL NOT NULL PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
+    metaTitle VARCHAR(300) NOT NULL DEFAULT 'My Blog',
     content TEXT NOT NULL,
     coverImage VARCHAR(200),
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -16,8 +17,8 @@ CREATE TABLE blog (
     published BOOLEAN DEFAULT FALSE,
     featured BOOLEAN DEFAULT FALSE,
     writtenBy INT NOT NULL DEFAULT 22,
-    toc JSONB,
     FOREIGN KEY (writtenBy) REFERENCES users(id) ON DELETE CASCADE
+
   );
 
   //add new column published to blog table
@@ -45,6 +46,8 @@ verified BOOLEAN DEFAULT FALSE
 ALTER TABLE users ADD COLUMN country VARCHAR(100);
 ALTER TABLE users ADD COLUMN verified BOOLEAN DEFAULT FALSE;
 
+ALTER TABLE users ADD COLUMN gender VARCHAR(100);
+ALTER TABLE users ADD COLUMN bio TEXT;
 
 CREATE TABLE blogcategories (
     id SERIAL NOT NULL PRIMARY KEY,
@@ -72,5 +75,12 @@ CREATE TABLE messages (
     subject VARCHAR(100) NOT NULL,
     message TEXT NOT NULL,
     solved BOOLEAN DEFAULT FALSE,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE subscriptions (
+    id SERIAL NOT NULL PRIMARY KEY,
+    email VARCHAR(200) NOT NULL,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
