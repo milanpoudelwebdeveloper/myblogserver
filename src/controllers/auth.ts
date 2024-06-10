@@ -4,6 +4,7 @@ import { sendEmail } from '@root/globals/sendEmail'
 import { Request, Response } from 'express'
 import jwt, { VerifyErrors } from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
+import { forgotPasswordTemplate, verifyEmailTemplate } from '@/templates/emails/auth'
 
 const clientUrl = process.env.CLIENT_URL
 const environment = process.env.NODE_ENV
@@ -24,45 +25,6 @@ const clearCookies = (res: Response) => {
   })
 }
 
-const message = (clientUrl: string, token: string) => {
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Your Account</title>
-</head>
-<body style="margin: 0; padding: 0; background-color: #f7f7f7; font-family: Arial, sans-serif;">
-    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 30px auto; background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-        <tr>
-            <td align="center" style="background-color: #4CAF50; color: white; padding: 10px; border-top-left-radius: 10px; border-top-right-radius: 10px;">
-                <h1 style="margin: 0; font-size: 24px;">Welcome to MyBlog!</h1>
-            </td>
-        </tr>
-        <tr>
-            <td style="padding: 20px; line-height: 1.6; color: #333;">
-                <p>Dear User,</p>
-                <p>Thank you for signing up with MyBlog. To complete your registration, please verify your account by clicking the button below:</p>
-                <p style="text-align: center;">
-                    <a href="${clientUrl}/verify-account?token=${token}" style="display: inline-block; background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-size: 16px;">Verify Account</a>
-                </p>
-                <p>If you did not sign up for this account, please disregard this email.</p>
-                <p>Best regards,<br>The MyBlog Team</p>
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: center; color: #777; font-size: 12px; margin-top: 20px;">
-                <p>&copy; 2024 MyBlog. All rights reserved.</p>
-                <p><a href="#" style="color: #777; text-decoration: none;">Privacy Policy</a> | <a href="#" style="color: #777; text-decoration: none;">Terms of Service</a></p>
-            </td>
-        </tr>
-    </table>
-</body>
-</html>
-`
-}
-
 export const signUp = async (req: Request, res: Response) => {
   const { name, email, password, country } = req.body
   try {
@@ -79,7 +41,7 @@ export const signUp = async (req: Request, res: Response) => {
     const userCreated = await db.query(query, [name, email, hashedPassword, country])
     if (userCreated.rows.length > 0) {
       const token = generateJWTKey(userCreated.rows[0].id)
-      const emailMessage = message(clientUrl!, token)
+      const emailMessage = verifyEmailTemplate(clientUrl!, token)
       sendEmail(email, 'Welcome to Code With Milan', emailMessage)
       return res.status(201).json({ message: 'User created successfully. Please check your email and verify account before loggin in' })
     } else {
@@ -138,8 +100,8 @@ export const loginUser = async (req: Request, res: Response) => {
       } else {
         const isVerified = user.verified
         if (!isVerified) {
-          return res.status(400).json({
-            message: 'Account not verified. Please check your email for the verification link'
+          return res.status(403).json({
+            message: 'Account not verified. Please check your previous email for the verification link'
           })
         }
         const payload = {
@@ -241,10 +203,12 @@ export const sendVerificationLink = async (req: Request, res: Response) => {
     }
     const user = await db.query('SELECT * FROM users WHERE email=$1', [email])
     if (user?.rows?.length) {
+      if (user.rows[0].verified) {
+        return res.status(403).json({ message: 'Account already verified. Please login' })
+      }
       const token = generateJWTKey(user.rows[0].id)
-      const message = `Please verify your account by clicking on the link below.
-      ${clientUrl}/verify-account?token=${token}`
-      sendEmail(email, 'Welcome to MyBlog', message)
+      const message = verifyEmailTemplate(clientUrl!, token)
+      sendEmail(email, 'Welcome to Code With Milan', message)
       return res.status(200).json({ message: 'Verification link sent successfully' })
     } else {
       return res.status(400).json({ message: 'User with that email not found' })
@@ -252,6 +216,46 @@ export const sendVerificationLink = async (req: Request, res: Response) => {
   } catch (e) {
     console.log('hey error while sending verification link', e)
     return res.status(500).json({ message: 'Something went wrong while sending verification link. Please try again' })
+  }
+}
+
+export const sendForgotPasswordLink = async (req: Request, res: Response) => {
+  const { email } = req.body
+  try {
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' })
+    }
+    const user = await db.query('SELECT * FROM users WHERE email=$1', [email])
+    if (user?.rows?.length) {
+      const token = generateJWTKey(user.rows[0].id)
+      const message = forgotPasswordTemplate(clientUrl!, token)
+      sendEmail(email, 'Welcome to Code With Milan', message)
+      return res.status(200).json({ message: 'Password reset link sent successfully' })
+    } else {
+      return res.status(400).json({ message: 'User with that email not found' })
+    }
+  } catch (e) {
+    console.log('hey error while sending verification link', e)
+    return res.status(500).json({ message: 'Something went wrong while sending verification link. Please try again' })
+  }
+}
+
+export const verifyPasswordReset = async (req: Request, res: Response) => {
+  const { token } = req.body
+  try {
+    if (!token) {
+      return res.status(400).json({ message: 'Token is invalid or not available' })
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload
+    if (decoded) {
+      const finalUrl = `${clientUrl}/change-password?token=${token}`
+      return res.status(200).json({ message: 'Link verified successfully', redirectUrl: finalUrl })
+    } else {
+      return res.status(400).json({ message: 'Invalid or expired token. Please try resending password reset link' })
+    }
+  } catch (e) {
+    console.log('hey error while verifying password reset', e)
+    return res.status(500).json({ message: 'Something went wrong while verifying password reset. Please try again' })
   }
 }
 
