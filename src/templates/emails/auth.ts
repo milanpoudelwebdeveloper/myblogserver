@@ -54,7 +54,7 @@ export const verifyEmailTemplate = (clientUrl: string, token: string) => {
             >
           </p>
           <p>If you did not sign up for this account, please disregard this email.</p>
-          <p>Best regards,<br />The MyBlog Team</p>
+          <p>Best regards,<br />Code With Milan</p>
         </td>
       </tr>
       <tr>
@@ -123,7 +123,7 @@ export const forgotPasswordTemplate = (clientUrl: string, token: string) => {
             >
           </p>
           <p>If you did not  request to reset your password, please disregard this email.</p>
-          <p>Best regards,<br />The MyBlog Team</p>
+          <p>Best regards,<br />Code With Milan</p>
         </td>
       </tr>
       <tr>
