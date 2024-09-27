@@ -16,7 +16,12 @@ dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 5000
-const allowedOrigins = ['http://localhost:3000', 'https://www.codewithmilan.com', 'https://codewithmilan.com']
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://www.codewithmilan.com',
+  'https://codewithmilan.com',
+  'https://main.d1ud8zh10ociae.amplifyapp.com'
+]
 
 app.use(
   cors({
